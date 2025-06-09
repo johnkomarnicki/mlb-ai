@@ -17,6 +17,8 @@ export default defineNuxtConfig({
     },
   },
 
+  supabase: {},
+
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
   modules: [

@@ -5,6 +5,8 @@ const user = useSupabaseUser();
 const { auth } = useSupabaseClient();
 const toast = useToast();
 
+console.log(user.value);
+
 const items: DropdownMenuItem[][] = [
   [
     {
@@ -12,29 +14,30 @@ const items: DropdownMenuItem[][] = [
       slot: "account",
       disabled: true,
     },
-    {
-      label: "My Profile",
-      click: toProfile,
-    },
-    {
-      label: "Profile Settings",
-      to: "/profile/settings",
-    },
+    // {
+    //   label: "My Profile",
+    //   click: toProfile,
+    // },
+    // {
+    //   label: "Profile Settings",
+    //   to: "/profile/settings",
+    // },
   ],
   [
     {
       label: "Sign out",
       icon: "i-mdi-logout",
-      click: logout,
+      onSelect: logout,
     },
   ],
 ];
 
-function toProfile() {
-  navigateTo(`/profile/${user.value?.id}`);
-}
+// function toProfile() {
+//   navigateTo(`/profile/${user.value?.id}`);
+// }
 
 async function logout() {
+  console.log("hello");
   try {
     const { error } = await auth.signOut();
     if (error) throw error;
@@ -52,8 +55,7 @@ async function logout() {
   <header class="py-4 border-b">
     <nav class="container mx-auto flex items-center">
       <NuxtLink to="/" class="flex gap-1 items-center">
-        <!-- <NuxtImg width="56px" src="/icon-green.png" format="webp" alt="" /> -->
-        <span class="text-3xl font-bold">AIBets</span>
+        <span class="text-3xl font-bold">MLB AI</span>
       </NuxtLink>
       <ul class="flex items-center gap-6 ml-auto text-xl font-bold capitalize">
         <li>

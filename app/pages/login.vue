@@ -44,9 +44,7 @@ async function formSubmission(event: FormSubmitEvent<Schema>) {
 </script>
 
 <template>
-  <div
-    class="bg-[#f1f1f1] max-w-screen-sm mx-auto mt-10 space-y-6 rounded-md p-8 text-xs shadow-md"
-  >
+  <div class="max-w-screen-sm mx-auto mt-10 space-y-6 rounded-md p-8 text-xs">
     <h1 class="text-xl sm:text-3xl">Login</h1>
     <!-- <UButton
       icon="logos:google-icon"
@@ -63,7 +61,7 @@ async function formSubmission(event: FormSubmitEvent<Schema>) {
       @submit="formSubmission"
       class="flex flex-col gap-y-4"
     >
-      <UFormField label="Email" name="email" size="lg">
+      <UFormField label="Email" name="email" size="xl">
         <UInput class="w-full" v-model="formState.email" />
       </UFormField>
       <UButton
