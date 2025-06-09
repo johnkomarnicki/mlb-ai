@@ -52,7 +52,7 @@ async function logout() {
 </script>
 
 <template>
-  <header class="py-4 border-b">
+  <header class="py-4 px-8 border-b">
     <nav class="container mx-auto flex items-center">
       <NuxtLink to="/" class="flex gap-1 items-center">
         <span class="text-3xl font-bold">MLB AI</span>
