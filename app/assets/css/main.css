@@ -1,0 +1,21 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme static {
+  --font-montserrat: "Montserrat", sans-serif;
+
+  --color-dodgeroll-gold-50: #fff9eb;
+  --color-dodgeroll-gold-100: #fdecc8;
+  --color-dodgeroll-gold-200: #fbd88c;
+  --color-dodgeroll-gold-300: #f9bd50;
+  --color-dodgeroll-gold-400: #f79f1a;
+  --color-dodgeroll-gold-500: #f1820f;
+  --color-dodgeroll-gold-600: #d65f09;
+  --color-dodgeroll-gold-700: #b13f0c;
+  --color-dodgeroll-gold-800: #903210;
+  --color-dodgeroll-gold-900: #762911;
+  --color-dodgeroll-gold-950: #441204;
+
+  --color-apple-green: #046e1b;
+  --color-dire-wolf: #292727;
+}
