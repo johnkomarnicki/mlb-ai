@@ -21,18 +21,20 @@ type MLBData = {
 };
 
 const client = useSupabaseClient();
-const today = new Date().toISOString().split("T")[0];
+const today = new Date().toLocaleDateString("en-CA"); // Format: YYYY-MM-DD
 // const today = "6-08-2025";
 const { data: mlbData, error: mlbError } = await useAsyncData<MLBData[]>(
   async () => {
     const { data, error } = await client
-      .from("gamePredictions")
+      .from("gamePredictionsBeta")
       .select("*")
       .eq("gameDate", today as string);
     if (error) throw error;
     return data;
   }
 );
+
+console.log(mlbData.value);
 
 const columns: TableColumn<MLBData>[] = [
   {
@@ -173,27 +175,42 @@ const columns: TableColumn<MLBData>[] = [
   },
 ];
 
+const gameInsight = ref(false);
+const selectedRow = ref<MLBData | boolean>(false);
 function doSomething(row: TableRow<MLBData>, e?: Event) {
-  row.toggleExpanded();
-  // navigateTo(`/game/${row.original.game_id}`);
+  selectedRow.value = row.original;
+  gameInsight.value = true;
 }
 </script>
 
 <template>
-  <div class="mx-auto container py-10">
-    <UTable @select="doSomething" :data="mlbData" :columns="columns">
-      <template #expanded="{ row }">
-        <p class="font-bold p-4">
-          {{ row.original.summary }}
+  <UModal
+    v-model:open="gameInsight"
+    :ui="{
+      content: 'p-10 max-w-2xl',
+    }"
+  >
+    <template #content>
+      <div class="border-none flex items-center mb-2">
+        <h1 class="text-xl">
+          <span class="font-bold"> {{ selectedRow.awayTeamName }} </span>
+          at
+          <span class="font-bold"> {{ selectedRow.homeTeamName }} </span>
+        </h1>
+        <p class="ml-auto">
+          AI Grade: <span class="font-bold">{{ selectedRow.grade }}</span>
         </p>
-      </template>
-    </UTable>
+      </div>
+      <h2 class="text-lg mb-2 border-none">Game Analysis</h2>
+      <div
+        class="prose text-white lg:prose-sm"
+        v-html="selectedRow.summary"
+      ></div>
+    </template>
+  </UModal>
+  <div class="mx-auto container py-10">
+    <UTable @select="doSomething" :data="mlbData" :columns="columns"></UTable>
   </div>
 </template>
 
-<style>
-td[colspan="6"] {
-  padding: 0px !important;
-  text-wrap: wrap !important;
-}
-</style>
+<style></style>
