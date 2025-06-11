@@ -6,18 +6,21 @@ const ULink = resolveComponent("ULink");
 const UButton = resolveComponent("UButton");
 
 type MLBData = {
-  game_id: string;
-  home_team: string;
-  away_team: string;
+  id: string; // uuid
+  gameId: number;
+  gameDate: string; // ISO date string (e.g., "2025-06-10")
   homeTeamId: number;
+  homeTeamName?: string | null;
   awayTeamId: number;
-  predicted_total: number;
-  predicted_home_score: number;
-  predicted_away_score: number;
-  score_diff: number;
-  edge_team: string;
-  time: string;
-  ampm: string;
+  awayTeamName?: string | null;
+  predictedHomeScore?: number | null;
+  predictedAwayScore?: number | null;
+  predictedTotalScore?: number | null;
+  teamEdgeId?: number | null;
+  teamEdgeName?: string | null;
+  createdAt?: string | null; // ISO timestamp (e.g., "2025-06-10T14:30:00Z")
+  summary?: string | null;
+  grade: string | null;
 };
 
 const client = useSupabaseClient();
@@ -26,35 +29,18 @@ const today = new Date().toLocaleDateString("en-CA"); // Format: YYYY-MM-DD
 const { data: mlbData, error: mlbError } = await useAsyncData<MLBData[]>(
   async () => {
     const { data, error } = await client
-      .from("gamePredictionsBeta")
+      .from("gamePredictions")
       .select("*")
-      .eq("gameDate", today as string);
+      .eq("gameDate", today as string)
+      .order("grade", {
+        ascending: true,
+      });
     if (error) throw error;
     return data;
   }
 );
 
-console.log(mlbData.value);
-
 const columns: TableColumn<MLBData>[] = [
-  {
-    id: "expand",
-    cell: ({ row }) =>
-      h(UButton, {
-        color: "neutral",
-        variant: "ghost",
-        icon: "i-lucide-chevron-down",
-        square: true,
-        "aria-label": "Expand",
-        ui: {
-          leadingIcon: [
-            "transition-transform",
-            row.getIsExpanded() ? "duration-200 rotate-180" : "",
-          ],
-        },
-        onClick: () => row.toggleExpanded(),
-      }),
-  },
   {
     accessorKey: "home_team",
     header: "Matchup",
@@ -67,10 +53,10 @@ const columns: TableColumn<MLBData>[] = [
               root: "bg-white/75 p-1.5",
               image: "object-contain rounded-none",
             },
-            alt: row.original.home_team,
+            alt: row.original.homeTeamName,
             size: "lg",
           }),
-          h("p", { class: " text-highlighted" }, row.original.awayTeamName),
+          h("p", { class: " text-highlighted" }, row.original.awayTeamName!),
           h("span", { class: " text-highlighted" }, "at"),
           h(UAvatar, {
             src: `https://www.mlbstatic.com/team-logos/${row.original.homeTeamId}.svg`,
@@ -81,43 +67,46 @@ const columns: TableColumn<MLBData>[] = [
             alt: row.original.homeTeamName,
             size: "lg",
           }),
-          h("p", { class: " text-highlighted" }, row.original.homeTeamName),
+          h("p", { class: " text-highlighted" }, row.original.homeTeamName!),
         ]),
       ]);
     },
   },
-  // {
-  //   accessorKey: "time",
-  //   header: "Game Time",
-  //   cell: ({ row }) => {
-  //     return h("div", { class: "flex items-center gap-3" }, [
-  //       h("div", { class: "flex items-center gap-3" }, [
-  //         h(
-  //           "p",
-  //           { class: "font-bold text-highlighted" },
-  //           `${row.original.time} ${row.original.ampm}`
-  //         ),
-  //       ]),
-  //     ]);
-  //   },
-  // },
   {
     accessorKey: "predicted_total",
     header: "Projected Score",
     cell: ({ row }) => {
       return h("div", { class: "flex flex-1 items-center gap-3" }, [
         h("div", { class: "flex items-center gap-3" }, [
+          h(UAvatar, {
+            src: `https://www.mlbstatic.com/team-logos/${row.original.awayTeamId}.svg`,
+            ui: {
+              root: "bg-white/75 p-1.5",
+              image: "object-contain rounded-none",
+            },
+            alt: row.original.awayTeamName,
+            size: "lg",
+          }),
           h(
             "p",
             { class: "font-bold text-highlighted" },
-            row.original.predictedAwayScore
+            row.original.predictedAwayScore!
           ),
           h("span", "-"),
           h(
             "p",
             { class: "font-bold text-highlighted" },
-            row.original.predictedHomeScore
+            row.original.predictedHomeScore!
           ),
+          h(UAvatar, {
+            src: `https://www.mlbstatic.com/team-logos/${row.original.homeTeamId}.svg`,
+            ui: {
+              root: "bg-white/75 p-1.5",
+              image: "object-contain rounded-none",
+            },
+            alt: row.original.homeTeamName,
+            size: "lg",
+          }),
         ]),
       ]);
     },
@@ -131,8 +120,7 @@ const columns: TableColumn<MLBData>[] = [
           h(
             "p",
             { class: "font-bold text-highlighted" },
-            parseInt(row.original.predictedHomeScore) +
-              parseInt(row.original.predictedAwayScore)
+            row.original.predictedHomeScore! + row.original.predictedAwayScore!
           ),
         ]),
       ]);
@@ -150,13 +138,13 @@ const columns: TableColumn<MLBData>[] = [
               root: "bg-white/75 p-1.5",
               image: "object-contain rounded-none",
             },
-            alt: row.original.away_team,
+            alt: row.original.awayTeamName,
             size: "lg",
           }),
           h(
             "p",
             { class: "font-bold text-highlighted" },
-            row.original.teamEdgeName
+            row.original.teamEdgeName!
           ),
         ]),
       ]);
@@ -168,7 +156,7 @@ const columns: TableColumn<MLBData>[] = [
     cell: ({ row }) => {
       return h("div", { class: "flex flex-1 items-center gap-3" }, [
         h("div", { class: "flex items-center gap-3" }, [
-          h("p", { class: "font-bold text-highlighted" }, row.original.grade),
+          h("p", { class: "font-bold text-highlighted" }, row.original.grade!),
         ]),
       ]);
     },
@@ -176,7 +164,7 @@ const columns: TableColumn<MLBData>[] = [
 ];
 
 const gameInsight = ref(false);
-const selectedRow = ref<MLBData | boolean>(false);
+const selectedRow = ref<MLBData | undefined>(undefined);
 function doSomething(row: TableRow<MLBData>, e?: Event) {
   selectedRow.value = row.original;
   gameInsight.value = true;
@@ -193,18 +181,18 @@ function doSomething(row: TableRow<MLBData>, e?: Event) {
     <template #content>
       <div class="border-none flex items-center mb-2">
         <h1 class="text-xl">
-          <span class="font-bold"> {{ selectedRow.awayTeamName }} </span>
+          <span class="font-bold"> {{ selectedRow?.awayTeamName }} </span>
           at
-          <span class="font-bold"> {{ selectedRow.homeTeamName }} </span>
+          <span class="font-bold"> {{ selectedRow?.homeTeamName }} </span>
         </h1>
         <p class="ml-auto">
-          AI Grade: <span class="font-bold">{{ selectedRow.grade }}</span>
+          AI Grade: <span class="font-bold">{{ selectedRow?.grade }}</span>
         </p>
       </div>
       <h2 class="text-lg mb-2 border-none">Game Analysis</h2>
       <div
         class="prose text-white lg:prose-sm"
-        v-html="selectedRow.summary"
+        v-html="selectedRow?.summary"
       ></div>
     </template>
   </UModal>
