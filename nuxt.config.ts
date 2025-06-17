@@ -17,7 +17,13 @@ export default defineNuxtConfig({
     },
   },
 
-  supabase: {},
+  supabase: {
+    redirectOptions: {
+      login: "/login",
+      callback: "/confirm",
+      exclude: ["/"],
+    },
+  },
 
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
@@ -34,6 +40,10 @@ export default defineNuxtConfig({
     families: {
       Montserrat: true,
     },
+  },
+
+  colorMode: {
+    preference: "light",
   },
 
   runtimeConfig: {

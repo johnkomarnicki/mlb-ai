@@ -4,18 +4,19 @@
 
 @theme static {
   --font-montserrat: "Montserrat", sans-serif;
+  --ui-primary: var(--color-abbey-500);
 
-  --color-dodgeroll-gold-50: #fff9eb;
-  --color-dodgeroll-gold-100: #fdecc8;
-  --color-dodgeroll-gold-200: #fbd88c;
-  --color-dodgeroll-gold-300: #f9bd50;
-  --color-dodgeroll-gold-400: #f79f1a;
-  --color-dodgeroll-gold-500: #f1820f;
-  --color-dodgeroll-gold-600: #d65f09;
-  --color-dodgeroll-gold-700: #b13f0c;
-  --color-dodgeroll-gold-800: #903210;
-  --color-dodgeroll-gold-900: #762911;
-  --color-dodgeroll-gold-950: #441204;
+  --color-abbey-50: #f4f5f7;
+  --color-abbey-100: #e4e8e9;
+  --color-abbey-200: #ccd1d5;
+  --color-abbey-300: #a8b1b8;
+  --color-abbey-400: #7d8a93;
+  --color-abbey-500: #626f78;
+  --color-abbey-600: #545e66;
+  --color-abbey-700: #495057;
+  --color-abbey-800: #40454a;
+  --color-abbey-900: #383b41;
+  --color-abbey-950: #232529;
 
   --color-apple-green: #046e1b;
   --color-dire-wolf: #292727;

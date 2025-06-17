@@ -52,17 +52,24 @@ async function logout() {
 </script>
 
 <template>
-  <header class="py-4 px-8 border-b">
-    <nav class="container mx-auto flex items-center">
+  <header class="py-4 px-8">
+    <nav class="container mx-auto flex flex-col md:flex-row gap-4 items-center">
       <NuxtLink to="/" class="flex gap-1 items-center">
-        <span class="text-3xl font-bold">MLB AI</span>
+        <span class="text-abbey-900 text-2xl font-bold">
+          Edge AI Sports Model
+        </span>
       </NuxtLink>
-      <ul class="flex items-center gap-6 ml-auto text-xl font-bold capitalize">
-        <li>
+      <ul
+        class="text-abbey-900 flex items-center gap-6 md:ml-auto text-xl font-bold capitalize"
+      >
+        <li class="text-base">
           <NuxtLink to="/">Home</NuxtLink>
         </li>
+        <li class="text-base">
+          <NuxtLink to="/mlb">MLB Scores Model</NuxtLink>
+        </li>
         <li v-if="!user">
-          <NuxtLink to="/login">Login</NuxtLink>
+          <UButton size="lg" to="/login">Login</UButton>
         </li>
 
         <UDropdownMenu
