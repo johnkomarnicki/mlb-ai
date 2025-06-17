@@ -68,9 +68,6 @@ async function logout() {
         <li class="text-base">
           <NuxtLink to="/mlb">MLB Scores Model</NuxtLink>
         </li>
-        <li v-if="!user">
-          <UButton size="lg" to="/login">Login</UButton>
-        </li>
 
         <UDropdownMenu
           v-if="user"

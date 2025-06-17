@@ -28,10 +28,7 @@ const user = useSupabaseUser();
           label="Go to models"
           size="xl"
         />
-        <NuxtImg
-          src="/hero-img-light-2.png"
-          class="mt-10 max-w-5xl w-full rounded-2xl"
-        />
+        <NuxtImg src="/hero-img-light-2.png" class="mt-10 max-w-5xl w-full" />
         <p class="mt-10 text-sm text-center max-w-4xl text-balance italic">
           * All picks and predictions shared on this site are for informational
           and entertainment purposes only. They are not guaranteed outcomes and
