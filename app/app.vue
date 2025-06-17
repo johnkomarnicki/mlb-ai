@@ -1,4 +1,4 @@
-<script lang="ts">
+<script setup lang="ts">
 onMounted(() => {
   localStorage.removeItem("nuxt-color-mode");
 });
