@@ -17,7 +17,13 @@ export default defineNuxtConfig({
     },
   },
 
-  supabase: {},
+  supabase: {
+    redirectOptions: {
+      login: '/login',
+      callback: '/confirm',
+      exclude: ['/']
+    }
+  },
 
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
@@ -39,6 +45,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_SITE_URL || "http://localhost:3000",
+      supabaseUrl: process.env.SUPABASE_URL,
+      supabaseAnonKey: process.env.SUPABASE_KEY,
     },
   },
 });
