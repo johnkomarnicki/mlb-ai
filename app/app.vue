@@ -1,3 +1,8 @@
+<script lang="ts">
+onMounted(() => {
+  localStorage.removeItem("nuxt-color-mode");
+});
+</script>
 <template>
   <div>
     <UApp>
