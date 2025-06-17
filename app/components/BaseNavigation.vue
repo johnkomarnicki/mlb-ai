@@ -84,8 +84,8 @@ async function logout() {
           <UAvatar size="md" :alt="user?.email" />
           <template #account="{ item }">
             <div class="truncate text-left">
-              <p>Signed in as</p>
-              <p class="truncate font-medium">
+              <p class="text-sm text-gray-500">Signed in as</p>
+              <p class="truncate font-medium text-dire-wolf">
                 {{ item.label }}
               </p>
             </div>
