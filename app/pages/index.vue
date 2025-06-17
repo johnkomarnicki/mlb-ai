@@ -68,8 +68,8 @@ const columns: TableColumn<MLBData>[] = [
             alt: row.original.homeTeamName,
             size: "lg",
           }),
-          h("p", { class: " text-highlighted" }, row.original.awayTeamName!),
-          h("span", { class: " text-highlighted" }, "at"),
+          h("p", { class: " text-dire-wolf" }, row.original.awayTeamName!),
+          h("span", { class: " text-dire-wolf" }, "at"),
           h(UAvatar, {
             src: `https://www.mlbstatic.com/team-logos/${row.original.homeTeamId}.svg`,
             ui: {
@@ -79,7 +79,7 @@ const columns: TableColumn<MLBData>[] = [
             alt: row.original.homeTeamName,
             size: "lg",
           }),
-          h("p", { class: " text-highlighted" }, row.original.homeTeamName!),
+          h("p", { class: " text-dire-wolf" }, row.original.homeTeamName!),
         ]),
       ]);
     },
@@ -101,13 +101,13 @@ const columns: TableColumn<MLBData>[] = [
           }),
           h(
             "p",
-            { class: "font-bold text-highlighted" },
+            { class: "font-bold text-dire-wolf" },
             row.original.predictedAwayScore!
           ),
           h("span", "-"),
           h(
             "p",
-            { class: "font-bold text-highlighted" },
+            { class: "font-bold text-dire-wolf" },
             row.original.predictedHomeScore!
           ),
           h(UAvatar, {
@@ -131,7 +131,7 @@ const columns: TableColumn<MLBData>[] = [
         h("div", { class: "flex items-center gap-3" }, [
           h(
             "p",
-            { class: "font-bold text-highlighted" },
+            { class: "font-bold text-dire-wolf" },
             row.original.predictedHomeScore! + row.original.predictedAwayScore!
           ),
         ]),
@@ -155,7 +155,7 @@ const columns: TableColumn<MLBData>[] = [
           }),
           h(
             "p",
-            { class: "font-bold text-highlighted" },
+            { class: "font-bold text-dire-wolf" },
             row.original.teamEdgeName!
           ),
         ]),
@@ -168,7 +168,7 @@ const columns: TableColumn<MLBData>[] = [
     cell: ({ row }) => {
       return h("div", { class: "flex flex-1 items-center gap-3" }, [
         h("div", { class: "flex items-center gap-3" }, [
-          h("p", { class: "font-bold text-highlighted" }, row.original.grade!),
+          h("p", { class: "font-bold text-dire-wolf" }, row.original.grade!),
         ]),
       ]);
     },
@@ -391,9 +391,3 @@ const stats = [
     <UTable @select="doSomething" :data="mlbData" :columns="columns"></UTable>
   </div>
 </template>
-
-<style scoped>
-.text-highlighted {
-  @apply text-dire-wolf;
-}
-</style>
