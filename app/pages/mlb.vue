@@ -27,7 +27,7 @@ const today = new Date().toLocaleDateString("en-CA"); // Format: YYYY-MM-DD
 const { data: mlbData, error: mlbError } = await useAsyncData<MLBData[]>(
   async () => {
     const { data, error } = await client
-      .from("gamePredictionsBeta")
+      .from("gamePredictions")
       .select("*")
       .eq("gameDate", today as string)
       .order("grade", {
@@ -150,6 +150,21 @@ const columns: TableColumn<MLBData>[] = [
   },
   {
     accessorKey: "edge_note",
+    header: "Edge Team Odds",
+    cell: ({ row }) => {
+      return h("div", { class: "flex flex-1 items-center gap-3" }, [
+        h("div", { class: "flex items-center gap-3" }, [
+          h(
+            "p",
+            { class: "font-bold text-highlighted" },
+            row.original.vegasOdds!
+          ),
+        ]),
+      ]);
+    },
+  },
+  {
+    accessorKey: "edge_note",
     header: "AI Grade",
     cell: ({ row }) => {
       return h("div", { class: "flex flex-1 items-center gap-3" }, [
@@ -192,7 +207,7 @@ function doSomething(row: TableRow<MLBData>, e?: Event) {
       </div>
       <h2 class="text-lg mb-2 border-none">Game Analysis</h2>
       <div
-        class="prose text-abbey-500lg:prose-sm"
+        class="prose text-abbey-500 lg:prose-sm"
         v-html="selectedRow?.summary"
       ></div>
     </template>
