@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import type { TableColumn, TableRow } from "@nuxt/ui";
+import moment from "moment";
 
 const UAvatar = resolveComponent("UAvatar");
+const UButton = resolveComponent("UButton");
 
 type MLBData = {
   id: string; // uuid
   gameId: number;
   gameDate: string; // ISO date string (e.g., "2025-06-10")
+  gameTime: string;
   homeTeamId: number;
   homeTeamName?: string | null;
   awayTeamId: number;
@@ -19,6 +22,7 @@ type MLBData = {
   createdAt?: string | null; // ISO timestamp (e.g., "2025-06-10T14:30:00Z")
   summary?: string | null;
   grade: string | null;
+  vegasOdds: number | null;
 };
 
 const client = useSupabaseClient();
@@ -39,6 +43,35 @@ const { data: mlbData, error: mlbError } = await useAsyncData<MLBData[]>(
 );
 
 const columns: TableColumn<MLBData>[] = [
+  {
+    accessorKey: "gameTime",
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return h(UButton, {
+        color: "primary",
+        variant: "ghost",
+        label: "Game Time",
+        icon: isSorted
+          ? isSorted === "asc"
+            ? "i-lucide-arrow-up-narrow-wide"
+            : "i-lucide-arrow-down-wide-narrow"
+          : "i-lucide-arrow-up-down",
+        class: "-mx-2.5",
+        onClick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+      });
+    },
+    cell: ({ row }) => {
+      return h("div", { class: "flex flex-1 items-center gap-3" }, [
+        h("div", { class: "flex items-center gap-3" }, [
+          h(
+            "p",
+            { class: "font-bold text-highlighted" },
+            moment(row.original.gameTime!).format("LT")
+          ),
+        ]),
+      ]);
+    },
+  },
   {
     accessorKey: "home_team",
     header: "Matchup",
@@ -72,7 +105,7 @@ const columns: TableColumn<MLBData>[] = [
   },
   {
     accessorKey: "predicted_total",
-    header: "Projected Score",
+    header: "Score",
     cell: ({ row }) => {
       return h("div", { class: "flex flex-1 items-center gap-3" }, [
         h("div", { class: "flex items-center gap-3" }, [
@@ -111,7 +144,7 @@ const columns: TableColumn<MLBData>[] = [
   },
   {
     accessorKey: "predicted_total",
-    header: "Projected Total",
+    header: "Total",
     cell: ({ row }) => {
       return h("div", { class: "flex flex-1 items-center gap-3" }, [
         h("div", { class: "flex items-center gap-3" }, [
@@ -126,7 +159,7 @@ const columns: TableColumn<MLBData>[] = [
   },
   {
     accessorKey: "edge_note",
-    header: "Winning Team",
+    header: "Winner",
     cell: ({ row }) => {
       return h("div", { class: "flex flex-1 items-center gap-3" }, [
         h("div", { class: "flex items-center gap-3" }, [
@@ -150,7 +183,7 @@ const columns: TableColumn<MLBData>[] = [
   },
   {
     accessorKey: "edge_note",
-    header: "Edge Team Odds",
+    header: "Odds",
     cell: ({ row }) => {
       return h("div", { class: "flex flex-1 items-center gap-3" }, [
         h("div", { class: "flex items-center gap-3" }, [
@@ -182,11 +215,18 @@ function doSomething(row: TableRow<MLBData>, e?: Event) {
   selectedRow.value = row.original;
   gameInsight.value = true;
 }
+
+const sorting = ref([
+  {
+    id: "gameTime",
+    desc: false,
+  },
+]);
 </script>
 
 <template>
   <UModal
-    v-model:open="gameInsight"
+    v-model:open="selectedRow"
     class="overflow-scroll"
     :ui="{
       content: 'p-10 max-w-2xl',
@@ -213,7 +253,13 @@ function doSomething(row: TableRow<MLBData>, e?: Event) {
     </template>
   </UModal>
   <div class="mx-auto container py-10">
-    <UTable @select="doSomething" :data="mlbData" :columns="columns"></UTable>
+    <UTable
+      class="flex-1"
+      v-model:sorting="sorting"
+      @select="doSomething"
+      :data="mlbData"
+      :columns="columns"
+    ></UTable>
   </div>
 </template>
 
