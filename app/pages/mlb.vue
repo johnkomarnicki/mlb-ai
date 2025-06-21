@@ -197,8 +197,22 @@ const columns: TableColumn<MLBData>[] = [
     },
   },
   {
-    accessorKey: "edge_note",
-    header: "AI Grade",
+    accessorKey: "grade",
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted();
+      return h(UButton, {
+        color: "primary",
+        variant: "ghost",
+        label: "AI Grade",
+        icon: isSorted
+          ? isSorted === "asc"
+            ? "i-lucide-arrow-up-narrow-wide"
+            : "i-lucide-arrow-down-wide-narrow"
+          : "i-lucide-arrow-up-down",
+        class: "-mx-2.5",
+        onClick: () => column.toggleSorting(column.getIsSorted() === "asc"),
+      });
+    },
     cell: ({ row }) => {
       return h("div", { class: "flex flex-1 items-center gap-3" }, [
         h("div", { class: "flex items-center gap-3" }, [
@@ -219,6 +233,10 @@ function doSomething(row: TableRow<MLBData>, e?: Event) {
 const sorting = ref([
   {
     id: "gameTime",
+    desc: false,
+  },
+  {
+    id: "grade",
     desc: false,
   },
 ]);
