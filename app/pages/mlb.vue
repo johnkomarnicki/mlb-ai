@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import type { TableColumn, TableRow } from "@nuxt/ui";
 import moment from "moment";
+import {
+  CalendarDate,
+  DateFormatter,
+  getLocalTimeZone,
+} from "@internationalized/date";
 
 const UAvatar = resolveComponent("UAvatar");
 const UButton = resolveComponent("UButton");
@@ -17,23 +22,40 @@ type MLBData = {
   predictedHomeScore?: number | null;
   predictedAwayScore?: number | null;
   predictedTotalScore?: number | null;
-  teamEdgeId?: number | null;
+  teamEdgeId?: string | null;
   teamEdgeName?: string | null;
   createdAt?: string | null; // ISO timestamp (e.g., "2025-06-10T14:30:00Z")
   summary?: string | null;
   grade: string | null;
   vegasOdds: number | null;
+  winningTeam: string | null;
 };
 
 const client = useSupabaseClient();
-const today = new Date().toLocaleDateString("en-CA"); // Format: YYYY-MM-DD
-// const today = "6-08-2025";
+const today = new Date();
+
+// Date
+const df = new DateFormatter("en-US", {
+  dateStyle: "medium",
+});
+
+const modelValue = shallowRef(
+  new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
+);
+const dateValueComputed = computed(() => `date-${modelValue.value}`);
+
 const { data: mlbData, error: mlbError } = await useAsyncData<MLBData[]>(
+  dateValueComputed,
   async () => {
     const { data, error } = await client
       .from("gamePredictions")
       .select("*")
-      .eq("gameDate", today as string)
+      .eq(
+        "gameDate",
+        modelValue.value
+          .toDate(getLocalTimeZone())
+          .toLocaleDateString("en-US") as string
+      )
       .order("grade", {
         ascending: true,
       });
@@ -41,6 +63,21 @@ const { data: mlbData, error: mlbError } = await useAsyncData<MLBData[]>(
     return data;
   }
 );
+
+const correctPredictionCount = computed(() => {
+  return (
+    mlbData.value?.filter(
+      (game) =>
+        game.winningTeam !== null &&
+        game.teamEdgeId !== null &&
+        game.winningTeam === game.teamEdgeId
+    ).length ?? 0
+  );
+});
+
+const totalEvaluatedCount = computed(() => {
+  return mlbData.value?.filter((game) => game.winningTeam !== null).length ?? 0;
+});
 
 const columns: TableColumn<MLBData>[] = [
   {
@@ -159,7 +196,7 @@ const columns: TableColumn<MLBData>[] = [
   },
   {
     accessorKey: "edge_note",
-    header: "Winner",
+    header: "Projected Winner",
     cell: ({ row }) => {
       return h("div", { class: "flex flex-1 items-center gap-3" }, [
         h("div", { class: "flex items-center gap-3" }, [
@@ -178,6 +215,25 @@ const columns: TableColumn<MLBData>[] = [
             row.original.teamEdgeName!
           ),
         ]),
+      ]);
+    },
+  },
+  {
+    accessorKey: "predicted_total",
+    header: "Winner",
+    cell: ({ row }) => {
+      return h("div", { class: "flex flex-1 items-center gap-3" }, [
+        row.original.winningTeam
+          ? h(UAvatar, {
+              src: `https://www.mlbstatic.com/team-logos/${row.original.winningTeam}.svg`,
+              ui: {
+                root: "bg-white/75 p-1.5",
+                image: "object-contain rounded-none",
+              },
+              alt: row.original.awayTeamName,
+              size: "lg",
+            })
+          : h("p", { class: " text-highlighted" }, "N/A"),
       ]);
     },
   },
@@ -270,7 +326,26 @@ const sorting = ref([
       ></div>
     </template>
   </UModal>
-  <div class="mx-auto container py-10">
+  <div class="flex flex-col mx-auto container py-10">
+    <div class="flex items-center gap-4">
+      <UPopover>
+        <UButton color="neutral" variant="subtle" icon="i-lucide-calendar">
+          {{
+            modelValue
+              ? df.format(modelValue.toDate(getLocalTimeZone()))
+              : "Select a date"
+          }}
+        </UButton>
+
+        <template #content>
+          <UCalendar v-model="modelValue" class="p-2" />
+        </template>
+      </UPopover>
+      <div v-if="correctPredictionCount">
+        Results:
+        {{ correctPredictionCount }} / {{ totalEvaluatedCount }}
+      </div>
+    </div>
     <UTable
       class="flex-1"
       v-model:sorting="sorting"
