@@ -237,21 +237,21 @@ const columns: TableColumn<MLBData>[] = [
       ]);
     },
   },
-  {
-    accessorKey: "edge_note",
-    header: "Odds",
-    cell: ({ row }) => {
-      return h("div", { class: "flex flex-1 items-center gap-3" }, [
-        h("div", { class: "flex items-center gap-3" }, [
-          h(
-            "p",
-            { class: "font-bold text-highlighted" },
-            row.original.vegasOdds!
-          ),
-        ]),
-      ]);
-    },
-  },
+  // {
+  //   accessorKey: "edge_note",
+  //   header: "Odds",
+  //   cell: ({ row }) => {
+  //     return h("div", { class: "flex flex-1 items-center gap-3" }, [
+  //       h("div", { class: "flex items-center gap-3" }, [
+  //         h(
+  //           "p",
+  //           { class: "font-bold text-highlighted" },
+  //           row.original.vegasOdds!
+  //         ),
+  //       ]),
+  //     ]);
+  //   },
+  // },
   {
     accessorKey: "grade",
     header: ({ column }) => {

@@ -168,35 +168,6 @@ export default defineEventHandler(async (event) => {
           )
           .select("*");
       }
-
-      const live = await $fetch(
-        `https://statsapi.mlb.com/api/v1.1/game/${gameId}/feed/live`
-      );
-      const weather = live?.gameData?.weather || {};
-      let windSpeed = 0,
-        windDirection = null;
-
-      if (weather.wind) {
-        try {
-          windSpeed = parseInt(weather.wind.split("mph")[0].trim());
-          if (weather.wind.includes(",")) {
-            windDirection = weather.wind.split(",")[1].trim().replace(".", "");
-          }
-        } catch {}
-      }
-
-      await client.from("environment").upsert(
-        {
-          gameId,
-          windSpeed,
-          windDirection,
-          temperature: parseInt(weather.temp || "0"),
-          weatherCondition: weather.condition,
-          isIndoorStadium:
-            weather.condition?.toLowerCase().includes("indoor") || false,
-        },
-        { onConflict: "gameId" }
-      );
     }
   }
 

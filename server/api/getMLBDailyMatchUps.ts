@@ -54,6 +54,7 @@ export default defineEventHandler(async (event) => {
     const homePitcher = probables.home;
     const awayPitcher = probables.away;
 
+    await fetchAndStoreWeather(gameId, client);
     const homeStats = await fetchStarterStats(homePitcher?.id);
     const awayStats = await fetchStarterStats(awayPitcher?.id);
 

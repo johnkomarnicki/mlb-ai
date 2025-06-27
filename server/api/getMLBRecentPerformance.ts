@@ -43,6 +43,7 @@ export default defineEventHandler(async (event) => {
 
 // --- Helpers ---
 function groupRecentTeamStats(data: any[], limitPerTeam: number) {
+  console.log(data);
   const sorted = [...data].sort((a, b) => {
     if (a.teamId !== b.teamId) return a.teamId - b.teamId;
     return new Date(b.gameDate).getTime() - new Date(a.gameDate).getTime();

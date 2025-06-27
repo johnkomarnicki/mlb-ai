@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 
 export default defineEventHandler(async (event) => {
   const client = await serverSupabaseClient(event);
-  const today = DateTime.now().minus({ days: 4 }).toFormat("yyyy-MM-dd");
+  const today = DateTime.now().minus({ days: 1 }).toFormat("yyyy-MM-dd");
 
   // Step 1: Get today's predictions
   const { data: predictions, error } = await client
