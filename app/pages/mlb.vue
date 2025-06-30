@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import type { TableColumn, TableRow } from "@nuxt/ui";
 import moment from "moment";
-import {
-  CalendarDate,
-  DateFormatter,
-  getLocalTimeZone,
-} from "@internationalized/date";
+import { CalendarDate, DateFormatter, getLocalTimeZone } from "@internationalized/date";
 
 const UAvatar = resolveComponent("UAvatar");
 const UButton = resolveComponent("UButton");
@@ -39,40 +35,23 @@ const df = new DateFormatter("en-US", {
   dateStyle: "medium",
 });
 
-const modelValue = shallowRef(
-  new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate())
-);
+const modelValue = shallowRef(new CalendarDate(today.getFullYear(), today.getMonth() + 1, today.getDate()));
 const dateValueComputed = computed(() => `date-${modelValue.value}`);
 
-const { data: mlbData, error: mlbError } = await useAsyncData<MLBData[]>(
-  dateValueComputed,
-  async () => {
-    const { data, error } = await client
-      .from("gamePredictions")
-      .select("*")
-      .eq(
-        "gameDate",
-        modelValue.value
-          .toDate(getLocalTimeZone())
-          .toLocaleDateString("en-US") as string
-      )
-      .order("grade", {
-        ascending: true,
-      });
-    if (error) throw error;
-    return data;
-  }
-);
+const { data: mlbData, error: mlbError } = await useAsyncData<MLBData[]>(dateValueComputed, async () => {
+  const { data, error } = await client
+    .from("gamePredictions")
+    .select("*")
+    .eq("gameDate", modelValue.value.toDate(getLocalTimeZone()).toLocaleDateString("en-US") as string)
+    .order("grade", {
+      ascending: true,
+    });
+  if (error) throw error;
+  return data;
+});
 
 const correctPredictionCount = computed(() => {
-  return (
-    mlbData.value?.filter(
-      (game) =>
-        game.winningTeam !== null &&
-        game.teamEdgeId !== null &&
-        game.winningTeam === game.teamEdgeId
-    ).length ?? 0
-  );
+  return mlbData.value?.filter((game) => game.winningTeam !== null && game.teamEdgeId !== null && game.winningTeam === game.teamEdgeId).length ?? 0;
 });
 
 const totalEvaluatedCount = computed(() => {
@@ -88,24 +67,14 @@ const columns: TableColumn<MLBData>[] = [
         color: "primary",
         variant: "ghost",
         label: "Game Time",
-        icon: isSorted
-          ? isSorted === "asc"
-            ? "i-lucide-arrow-up-narrow-wide"
-            : "i-lucide-arrow-down-wide-narrow"
-          : "i-lucide-arrow-up-down",
+        icon: isSorted ? (isSorted === "asc" ? "i-lucide-arrow-up-narrow-wide" : "i-lucide-arrow-down-wide-narrow") : "i-lucide-arrow-up-down",
         class: "-mx-2.5",
         onClick: () => column.toggleSorting(column.getIsSorted() === "asc"),
       });
     },
     cell: ({ row }) => {
       return h("div", { class: "flex flex-1 items-center gap-3" }, [
-        h("div", { class: "flex items-center gap-3" }, [
-          h(
-            "p",
-            { class: "font-bold text-highlighted" },
-            moment(row.original.gameTime!).format("LT")
-          ),
-        ]),
+        h("div", { class: "flex items-center gap-3" }, [h("p", { class: "font-bold text-highlighted" }, moment(row.original.gameTime!).format("LT"))]),
       ]);
     },
   },
@@ -155,17 +124,9 @@ const columns: TableColumn<MLBData>[] = [
             alt: row.original.awayTeamName,
             size: "lg",
           }),
-          h(
-            "p",
-            { class: "font-bold text-highlighted" },
-            row.original.predictedAwayScore!
-          ),
+          h("p", { class: "font-bold text-highlighted" }, row.original.predictedAwayScore!),
           h("span", "-"),
-          h(
-            "p",
-            { class: "font-bold text-highlighted" },
-            row.original.predictedHomeScore!
-          ),
+          h("p", { class: "font-bold text-highlighted" }, row.original.predictedHomeScore!),
           h(UAvatar, {
             src: `https://www.mlbstatic.com/team-logos/${row.original.homeTeamId}.svg`,
             ui: {
@@ -184,13 +145,7 @@ const columns: TableColumn<MLBData>[] = [
     header: "Total",
     cell: ({ row }) => {
       return h("div", { class: "flex flex-1 items-center gap-3" }, [
-        h("div", { class: "flex items-center gap-3" }, [
-          h(
-            "p",
-            { class: "font-bold text-highlighted" },
-            row.original.predictedHomeScore! + row.original.predictedAwayScore!
-          ),
-        ]),
+        h("div", { class: "flex items-center gap-3" }, [h("p", { class: "font-bold text-highlighted" }, row.original.predictedHomeScore! + row.original.predictedAwayScore!)]),
       ]);
     },
   },
@@ -209,11 +164,7 @@ const columns: TableColumn<MLBData>[] = [
             alt: row.original.awayTeamName,
             size: "lg",
           }),
-          h(
-            "p",
-            { class: "font-bold text-highlighted" },
-            row.original.teamEdgeName!
-          ),
+          h("p", { class: "font-bold text-highlighted" }, row.original.teamEdgeName!),
         ]),
       ]);
     },
@@ -260,20 +211,14 @@ const columns: TableColumn<MLBData>[] = [
         color: "primary",
         variant: "ghost",
         label: "AI Grade",
-        icon: isSorted
-          ? isSorted === "asc"
-            ? "i-lucide-arrow-up-narrow-wide"
-            : "i-lucide-arrow-down-wide-narrow"
-          : "i-lucide-arrow-up-down",
+        icon: isSorted ? (isSorted === "asc" ? "i-lucide-arrow-up-narrow-wide" : "i-lucide-arrow-down-wide-narrow") : "i-lucide-arrow-up-down",
         class: "-mx-2.5",
         onClick: () => column.toggleSorting(column.getIsSorted() === "asc"),
       });
     },
     cell: ({ row }) => {
       return h("div", { class: "flex flex-1 items-center gap-3" }, [
-        h("div", { class: "flex items-center gap-3" }, [
-          h("p", { class: "font-bold text-highlighted" }, row.original.grade!),
-        ]),
+        h("div", { class: "flex items-center gap-3" }, [h("p", { class: "font-bold text-highlighted" }, row.original.grade!)]),
       ]);
     },
   },
@@ -307,9 +252,7 @@ const sorting = ref([
     }"
   >
     <template #content>
-      <div
-        class="border-none flex flex-col md:flex-row gap-2 md:items-center mb-2 text-abbey-500"
-      >
+      <div class="border-none flex flex-col md:flex-row gap-2 md:items-center mb-2 text-abbey-500">
         <h1 class="text-balance text-xl">
           <span class="font-bold"> {{ selectedRow?.awayTeamName }} </span>
           at
@@ -320,39 +263,28 @@ const sorting = ref([
         </p>
       </div>
       <h2 class="text-lg mb-2 border-none">Game Analysis</h2>
-      <div
-        class="prose text-abbey-500 lg:prose-sm"
-        v-html="selectedRow?.summary"
-      ></div>
+      <div class="prose text-abbey-500 lg:prose-sm" v-html="selectedRow?.summary"></div>
     </template>
   </UModal>
-  <div class="flex flex-col mx-auto container py-10">
-    <div class="flex items-center gap-4">
-      <UPopover>
-        <UButton color="neutral" variant="subtle" icon="i-lucide-calendar">
-          {{
-            modelValue
-              ? df.format(modelValue.toDate(getLocalTimeZone()))
-              : "Select a date"
-          }}
-        </UButton>
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div class="flex flex-col mx-auto container py-10">
+      <div class="flex items-center gap-4">
+        <UPopover>
+          <UButton color="neutral" variant="subtle" icon="i-lucide-calendar">
+            {{ modelValue ? df.format(modelValue.toDate(getLocalTimeZone())) : "Select a date" }}
+          </UButton>
 
-        <template #content>
-          <UCalendar v-model="modelValue" class="p-2" />
-        </template>
-      </UPopover>
-      <div v-if="correctPredictionCount">
-        Results:
-        {{ correctPredictionCount }} / {{ totalEvaluatedCount }}
+          <template #content>
+            <UCalendar v-model="modelValue" class="p-2" />
+          </template>
+        </UPopover>
+        <div v-if="correctPredictionCount">
+          Results:
+          {{ correctPredictionCount }} / {{ totalEvaluatedCount }}
+        </div>
       </div>
+      <UTable v-model:sorting="sorting" @select="doSomething" :data="mlbData" :columns="columns"></UTable>
     </div>
-    <UTable
-      class="flex-1"
-      v-model:sorting="sorting"
-      @select="doSomething"
-      :data="mlbData"
-      :columns="columns"
-    ></UTable>
   </div>
 </template>
 

@@ -6,10 +6,7 @@ export default defineEventHandler(async (event) => {
   const today = DateTime.now().minus({ days: 1 }).toFormat("yyyy-MM-dd");
 
   // Step 1: Get today's predictions
-  const { data: predictions, error } = await client
-    .from("gamePredictions")
-    .select("*")
-    .eq("gameDate", today);
+  const { data: predictions, error } = await client.from("gamePredictions").select("*").eq("gameDate", today);
 
   if (error)
     throw createError({
@@ -20,13 +17,10 @@ export default defineEventHandler(async (event) => {
   const results = [];
 
   for (const prediction of predictions) {
-    const { gameId, homeTeamId, awayTeamId, teamEdgeId, teamEdgeName } =
-      prediction;
+    const { gameId, homeTeamId, awayTeamId, teamEdgeId, teamEdgeName } = prediction;
 
     // Step 2: Fetch game data from MLB API
-    const mlbRes = await fetch(
-      `https://statsapi.mlb.com/api/v1.1/game/${gameId}/feed/live`
-    );
+    const mlbRes = await fetch(`https://statsapi.mlb.com/api/v1.1/game/${gameId}/feed/live`);
     if (!mlbRes.ok) {
       results.push({
         gameId,
@@ -52,10 +46,7 @@ export default defineEventHandler(async (event) => {
     const winnerTeamId = homeRuns > awayRuns ? homeTeamId : awayTeamId;
 
     // Step 5: Update correctOutcome
-    const { data, error: updateError } = await client
-      .from("gamePredictions")
-      .update({ winningTeam: winnerTeamId })
-      .eq("gameId", gameId);
+    const { data, error: updateError } = await client.from("gamePredictions").update({ winningTeam: winnerTeamId }).eq("gameId", gameId);
 
     // results.push({
     //   gameId,
