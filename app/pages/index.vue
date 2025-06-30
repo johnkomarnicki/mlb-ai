@@ -143,15 +143,14 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="py-20 px-4 lg:px-8">
+    <section class="max-w-3xl mx-auto py-20 px-4 lg:px-8">
       <div class="container mx-auto text-center">
         <h2 class="text-4xl lg:text-5xl font-bold text-white mb-6">
           Start winning more<br />
           with data-driven insights.
         </h2>
         <p class="text-gray-300 text-lg mb-8 max-w-3xl mx-auto">
-          Join thousands of successful bettors who use our AI-powered predictions to consistently beat the sportsbooks. Get started with your free trial today and see the
-          difference data makes.
+          Join successful bettors who use our AI-powered predictions to consistently beat the sportsbooks. Get started with your free trial today and see the difference data makes.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
           <!-- <UButton size="lg" color="primary" class="px-8 py-3" to="/login"> Start Free Trial </UButton> -->
