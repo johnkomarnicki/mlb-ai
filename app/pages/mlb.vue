@@ -205,6 +205,11 @@ const columns: TableColumn<MLBData>[] = [
   // },
   {
     accessorKey: "grade",
+    sortingFn: (rowA, rowB, columnId) => {
+      const aValue = parseFloat(rowA.original.grade) || 0;
+      const bValue = parseFloat(rowB.original.grade) || 0;
+      return aValue - bValue;
+    },
     header: ({ column }) => {
       const isSorted = column.getIsSorted();
       return h(UButton, {
