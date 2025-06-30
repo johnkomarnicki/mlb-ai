@@ -208,10 +208,10 @@
                 <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
               </svg>
             </div>
-            <span class="text-white text-xl font-bold">Edge AI Sports Model</span>
+            <span class="text-white text-xl font-bold">Edge AI Bets</span>
           </div>
           <div class="text-center md:text-right">
-            <p class="text-gray-400 text-sm mb-2">© 2025 Edge AI Sports Model. All Rights Reserved.</p>
+            <p class="text-gray-400 text-sm mb-2">© 2025 Edge AI Bets. All Rights Reserved.</p>
             <p class="text-gray-500 text-xs">21+ only. Bet responsibly. All predictions are for informational purposes only.</p>
           </div>
         </div>
@@ -223,7 +223,7 @@
 <script setup lang="ts">
 // Set page meta
 useHead({
-  title: "Edge AI Sports Model - Smarter bets, not harder ones.",
+  title: "Edge AI Bets - Smarter bets, not harder ones.",
   meta: [{ name: "description", content: "AI-powered sports picks that give you an edge — backed by data, built for bettors who want to win more, not guess more." }],
 });
 </script>

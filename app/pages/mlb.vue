@@ -6,6 +6,21 @@ import { CalendarDate, DateFormatter, getLocalTimeZone } from "@internationalize
 const UAvatar = resolveComponent("UAvatar");
 const UButton = resolveComponent("UButton");
 
+// SEO Meta Data
+useSeoMeta({
+  title: "MLB Predictions - AI-Powered Baseball Game Predictions",
+  description: "Get accurate MLB game predictions powered by advanced AI models. View daily baseball predictions, scores, winners, and AI confidence grades for all MLB games.",
+  keywords: "MLB predictions, baseball predictions, AI sports betting, MLB game predictions, baseball AI, sports analytics, MLB scores, baseball winners",
+  ogTitle: "MLB Predictions - Edge AI Bets",
+  ogDescription: "Advanced AI-powered MLB game predictions with confidence grades and detailed analysis. Get the edge on today's baseball games.",
+  ogType: "website",
+  // ogUrl: "https://aibets.com/mlb",
+  twitterCard: "summary_large_image",
+  twitterTitle: "MLB Predictions - Edge AI Bets",
+  twitterDescription: "AI-powered MLB predictions with confidence grades and game analysis",
+  robots: "index, follow",
+});
+
 type MLBData = {
   id: string; // uuid
   gameId: number;
