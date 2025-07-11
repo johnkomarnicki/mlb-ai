@@ -32,6 +32,7 @@ export default defineNuxtConfig({
     "@nuxt/ui",
     "@nuxtjs/supabase",
     "@nuxtjs/google-fonts",
+    "nuxt-cron",
   ],
 
   css: ["~/assets/css/main.css"],
