@@ -1,7 +1,7 @@
 import { defineCronHandler } from "#nuxt/cron";
 
 export default defineCronHandler(
-  () => "15 10 * * *",
+  () => "35 10 * * *",
   async () => {
     try {
       console.log("🕙 Cron job started: Running daily MLB model");

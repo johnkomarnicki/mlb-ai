@@ -55,4 +55,10 @@ export default defineNuxtConfig({
       supabaseAnonKey: process.env.SUPABASE_KEY,
     },
   },
+
+  cron: {
+    runOnInit: true,
+    timeZone: "America/New_York",
+    jobsDir: "cron",
+  },
 });
