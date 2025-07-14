@@ -48,6 +48,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    openweatherApiKey: process.env.OPENWEATHER_API_KEY,
     public: {
       apiBase: process.env.NUXT_PUBLIC_SITE_URL || "http://localhost:3000",
       supabaseUrl: process.env.SUPABASE_URL,

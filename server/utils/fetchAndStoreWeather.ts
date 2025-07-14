@@ -6,7 +6,7 @@ export async function fetchAndStoreWeather(
     typeof import("#supabase/server").serverSupabaseServiceRole
   >
 ) {
-  const apiKey = "d85717bc84da32da0f42627effe2872c";
+  const apiKey = useRuntimeConfig().openweatherApiKey || process.env.OPENWEATHER_API_KEY;
 
   if (!apiKey) {
     console.error("Missing OPENWEATHER_API_KEY");

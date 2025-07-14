@@ -2,25 +2,41 @@
 import { Database } from "../../database.types";
 import { serverSupabaseServiceRole } from "#supabase/server";
 import { DateTime } from "luxon";
+import { fetchAndStoreWeather } from "../utils/fetchAndStoreWeather";
 
 export default defineEventHandler(async (event) => {
-  const client = await serverSupabaseServiceRole<Database>(event);
+  try {
+    const client = await serverSupabaseServiceRole<Database>(event);
 
-  const today = DateTime.utc().toISODate();
+    const today = DateTime.utc().toISODate();
 
-  const scheduleUrl = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}`;
-  const scheduleRes = await fetch(scheduleUrl);
-  const scheduleJson = await scheduleRes.json();
-  const games = scheduleJson?.dates?.[0]?.games || [];
+    const scheduleUrl = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}`;
+    const scheduleRes = await fetch(scheduleUrl);
+    
+    if (!scheduleRes.ok) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: `Failed to fetch MLB schedule: ${scheduleRes.status}`
+      });
+    }
+    
+    const scheduleJson = await scheduleRes.json();
+    const games = scheduleJson?.dates?.[0]?.games || [];
 
   const localZone = "America/New_York";
   const records = [];
 
   const fetchStarterStats = async (pitcherId: number | null) => {
     if (!pitcherId) return {};
-    const statsUrl = `https://statsapi.mlb.com/api/v1/people/${pitcherId}/stats?stats=season&group=pitching`;
-    const res = await fetch(statsUrl);
     try {
+      const statsUrl = `https://statsapi.mlb.com/api/v1/people/${pitcherId}/stats?stats=season&group=pitching`;
+      const res = await fetch(statsUrl);
+      
+      if (!res.ok) {
+        console.warn(`Failed to fetch stats for pitcher ${pitcherId}: ${res.status}`);
+        return {};
+      }
+      
       const data = await res.json();
       const stat = data.stats?.[0]?.splits?.[0]?.stat;
       return {
@@ -31,7 +47,8 @@ export default defineEventHandler(async (event) => {
         hr9: parseFloat(stat?.homeRunsPer9 ?? null),
         inningsPitched: parseFloat(stat?.inningsPitched ?? null),
       };
-    } catch {
+    } catch (error) {
+      console.warn(`Error fetching stats for pitcher ${pitcherId}:`, error);
       return {};
     }
   };
@@ -48,13 +65,24 @@ export default defineEventHandler(async (event) => {
 
     const liveUrl = `https://statsapi.mlb.com/api/v1.1/game/${gameId}/feed/live`;
     const liveRes = await fetch(liveUrl);
+    
+    if (!liveRes.ok) {
+      console.warn(`Failed to fetch live data for game ${gameId}: ${liveRes.status}`);
+      continue;
+    }
+    
     const liveJson = await liveRes.json();
 
     const probables = liveJson?.gameData?.probablePitchers || {};
     const homePitcher = probables.home;
     const awayPitcher = probables.away;
 
-    await fetchAndStoreWeather(gameId, client);
+    try {
+      await fetchAndStoreWeather(gameId, client);
+    } catch (error) {
+      console.warn(`Weather fetch failed for game ${gameId}:`, error);
+    }
+    
     const homeStats = await fetchStarterStats(homePitcher?.id);
     const awayStats = await fetchStarterStats(awayPitcher?.id);
 
@@ -99,5 +127,13 @@ export default defineEventHandler(async (event) => {
     return { message: `✅ Upserted ${records.length} games into todaysGames` };
   } else {
     return { message: "⚠️ No games found for today" };
+  }
+  
+  } catch (error) {
+    console.error("❌ API Error:", error);
+    throw createError({
+      statusCode: 500,
+      statusMessage: `MLB API Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+    });
   }
 });
