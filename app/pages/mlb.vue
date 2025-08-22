@@ -265,7 +265,7 @@ const sorting = ref([
 
 <template>
   <UModal
-    v-model:open="selectedRow"
+    v-model:open="gameInsight"
     class="overflow-scroll"
     :ui="{
       content: 'p-10 max-w-2xl',

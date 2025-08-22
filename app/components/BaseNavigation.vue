@@ -12,8 +12,6 @@ const isMobileMenuOpen = ref(false);
 // Check if we're on the home page
 const isHomePage = computed(() => route.path === "/");
 
-console.log(user.value);
-
 const items: DropdownMenuItem[][] = [
   [
     {
@@ -67,22 +65,60 @@ async function logout() {
 </script>
 
 <template>
-  <header class="py-4 px-4 lg:px-8" :class="isHomePage ? 'bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900' : 'bg-white border-b border-gray-200'">
-    <nav class="container mx-auto flex items-center justify-between">
+  <header
+    :class="
+      isHomePage
+        ? 'bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900'
+        : 'bg-white border-b border-gray-200'
+    "
+  >
+    <nav class="container mx-auto flex items-center justify-between py-4">
       <!-- Logo -->
       <NuxtLink to="/" class="flex items-center gap-2" @click="closeMobileMenu">
-        <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-          <svg class="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+        <div
+          class="w-8 h-8 bg-white rounded-lg flex items-center justify-center"
+        >
+          <svg
+            class="w-5 h-5 text-gray-700"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"
+            />
           </svg>
         </div>
-        <span class="text-xl font-bold" :class="isHomePage ? 'text-white' : 'text-gray-900'">Edge AI Bets</span>
+        <span
+          class="text-xl font-bold"
+          :class="isHomePage ? 'text-white' : 'text-gray-900'"
+          >Edge AI Bets</span
+        >
       </NuxtLink>
 
       <!-- Desktop Navigation -->
       <div class="hidden lg:flex items-center space-x-8">
-        <NuxtLink to="/" class="transition-colors" :class="isHomePage ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'"> Home </NuxtLink>
-        <NuxtLink to="/mlb" class="transition-colors" :class="isHomePage ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'"> MLB Predictions </NuxtLink>
+        <NuxtLink
+          to="/dashboard/mlb"
+          class="transition-colors"
+          :class="
+            isHomePage
+              ? 'text-gray-300 hover:text-white'
+              : 'text-gray-600 hover:text-gray-900'
+          "
+        >
+          Home
+        </NuxtLink>
+        <NuxtLink
+          to="/mlb"
+          class="transition-colors"
+          :class="
+            isHomePage
+              ? 'text-gray-300 hover:text-white'
+              : 'text-gray-600 hover:text-gray-900'
+          "
+        >
+          MLB Predictions
+        </NuxtLink>
         <!-- <NuxtLink to="#features" class="transition-colors" :class="isHomePage ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'"> How It Works </NuxtLink> -->
       </div>
 
@@ -108,12 +144,20 @@ async function logout() {
           </template>
         </UDropdownMenu>
 
-        <UButton v-else :color="isHomePage ? 'white' : 'gray'" size="sm" to="/login" class="hidden sm:block"> Get Started </UButton>
+        <UButton
+          v-else
+          color="primary"
+          size="md"
+          to="/login"
+          class="hidden sm:block"
+        >
+          Get Started
+        </UButton>
 
         <!-- Mobile menu button -->
         <UButton
           variant="ghost"
-          :color="isHomePage ? 'white' : 'gray'"
+          color="primary"
           size="md"
           class="lg:hidden"
           :class="isHomePage ? 'text-white' : 'text-gray-900'"
@@ -137,7 +181,11 @@ async function logout() {
           <NuxtLink
             to="/"
             class="block transition-colors py-2"
-            :class="isHomePage ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'"
+            :class="
+              isHomePage
+                ? 'text-gray-300 hover:text-white'
+                : 'text-gray-600 hover:text-gray-900'
+            "
             @click="closeMobileMenu"
           >
             Home
@@ -145,13 +193,33 @@ async function logout() {
           <NuxtLink
             to="/mlb"
             class="block transition-colors py-2"
-            :class="isHomePage ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'"
+            :class="
+              isHomePage
+                ? 'text-gray-300 hover:text-white'
+                : 'text-gray-600 hover:text-gray-900'
+            "
             @click="closeMobileMenu"
           >
             MLB Predictions
           </NuxtLink>
-          <div v-if="!user" class="pt-2" :class="isHomePage ? 'border-t border-gray-700' : 'border-t border-gray-300'">
-            <UButton :color="isHomePage ? 'white' : 'gray'" size="sm" to="/login" class="w-full" @click="closeMobileMenu"> Get Started </UButton>
+          <div
+            v-if="!user"
+            class="pt-2"
+            :class="
+              isHomePage
+                ? 'border-t border-gray-700'
+                : 'border-t border-gray-300'
+            "
+          >
+            <UButton
+              :color="isHomePage ? 'white' : 'gray'"
+              size="sm"
+              to="/login"
+              class="w-full"
+              @click="closeMobileMenu"
+            >
+              Get Started
+            </UButton>
           </div>
         </div>
       </div>

@@ -1,23 +1,41 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900">
+  <div
+    class="min-h-screen bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900"
+  >
     <!-- Hero Section -->
     <section class="relative py-20 px-4 lg:px-8">
-      <div class="flex flex-col items-center justify-center container mx-auto text-center">
+      <div
+        class="flex flex-col items-center justify-center container mx-auto text-center"
+      >
         <!-- Main Heading -->
-        <h1 class="text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+        <h1
+          class="text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight"
+        >
           Smarter bets,<br />
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400"> not harder ones. </span>
+          <span
+            class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400"
+          >
+            not harder ones.
+          </span>
         </h1>
 
         <!-- Subheading -->
         <p class="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
-          AI-powered sports picks that give you an edge — backed by data, built<br />
+          AI-powered sports picks that give you an edge — backed by data,
+          built<br />
           for bettors who want to win more, not guess more.
         </p>
 
         <!-- CTA Buttons -->
         <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-          <UButton size="lg" color="primary" class="px-8 py-3" to="/mlb"> View MLB Predictions </UButton>
+          <UButton
+            size="lg"
+            color="primary"
+            class="px-8 py-3"
+            to="/dashboard/mlb"
+          >
+            View Predictions
+          </UButton>
           <!-- <UButton size="lg" color="neutral" class="px-8 py-3" to="/login"> Start Free Trial </UButton> -->
         </div>
 
@@ -56,7 +74,11 @@
     <section id="features" class="py-20 px-4 lg:px-8">
       <div class="container mx-auto">
         <div class="text-center mb-16">
-          <h2 class="text-4xl lg:text-5xl font-bold text-white mb-6 max-w-3xl text-balance mx-auto">Advanced AI models built for your winning edge.</h2>
+          <h2
+            class="text-4xl lg:text-5xl font-bold text-white mb-6 max-w-3xl text-balance mx-auto"
+          >
+            Advanced AI models built for your winning edge.
+          </h2>
           <p class="text-gray-300 text-lg">
             Our cutting-edge algorithms analyze thousands of data points<br />
             to deliver the most accurate sports predictions available.
@@ -66,9 +88,18 @@
         <!-- Feature Cards -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           <!-- Real-time Analytics Card -->
-          <div class="bg-gradient-to-br from-slate-800/50 to-gray-800/50 backdrop-blur-sm border border-gray-600/30 rounded-2xl p-8">
-            <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-6">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div
+            class="bg-gradient-to-br from-slate-800/50 to-gray-800/50 backdrop-blur-sm border border-gray-600/30 rounded-2xl p-8"
+          >
+            <div
+              class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-6"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -77,34 +108,63 @@
                 />
               </svg>
             </div>
-            <h3 class="text-2xl font-bold text-white mb-4">Real-Time Analytics</h3>
+            <h3 class="text-2xl font-bold text-white mb-4">
+              Real-Time Analytics
+            </h3>
             <p class="text-gray-300 mb-6">
-              Our AI processes live game data, player performance metrics, weather conditions, and hundreds of other variables in real-time to give you the most accurate
-              predictions right up to game time.
+              Our AI processes live game data, player performance metrics,
+              weather conditions, and hundreds of other variables in real-time
+              to give you the most accurate predictions right up to game time.
             </p>
           </div>
 
           <!-- Detailed AI Predictions Card -->
-          <div class="bg-gradient-to-br from-gray-800/50 to-slate-800/50 backdrop-blur-sm border border-gray-600/30 rounded-2xl p-8">
-            <div class="w-12 h-12 bg-cyan-600 rounded-lg flex items-center justify-center mb-6">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <div
+            class="bg-gradient-to-br from-gray-800/50 to-slate-800/50 backdrop-blur-sm border border-gray-600/30 rounded-2xl p-8"
+          >
+            <div
+              class="w-12 h-12 bg-cyan-600 rounded-lg flex items-center justify-center mb-6"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </div>
-            <h3 class="text-2xl font-bold text-white mb-4">Detailed AI Predictions</h3>
+            <h3 class="text-2xl font-bold text-white mb-4">
+              Detailed AI Predictions
+            </h3>
             <p class="text-gray-300 mb-6">
-              Get comprehensive predictions with team scores, winning team selection, confidence grades, and detailed AI-generated summaries explaining the reasoning behind each
-              pick.
+              Get comprehensive predictions with team scores, winning team
+              selection, confidence grades, and detailed AI-generated summaries
+              explaining the reasoning behind each pick.
             </p>
           </div>
         </div>
 
         <!-- Machine Learning Models Card -->
-        <div class="bg-gradient-to-br from-slate-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-600/30 rounded-2xl p-8">
+        <div
+          class="bg-gradient-to-br from-slate-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-600/30 rounded-2xl p-8"
+        >
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div>
-              <div class="w-12 h-12 bg-slate-600 rounded-lg flex items-center justify-center mb-6">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div
+                class="w-12 h-12 bg-slate-600 rounded-lg flex items-center justify-center mb-6"
+              >
+                <svg
+                  class="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -113,15 +173,21 @@
                   />
                 </svg>
               </div>
-              <h3 class="text-2xl font-bold text-white mb-4">Advanced ML Models</h3>
+              <h3 class="text-2xl font-bold text-white mb-4">
+                Advanced ML Models
+              </h3>
               <p class="text-gray-300 mb-6">
-                Our sophisticated machine learning models combine comprehensive historical data, recent team performance trends, and multiple other factors to generate highly
-                accurate predictions for every game outcome.
+                Our sophisticated machine learning models combine comprehensive
+                historical data, recent team performance trends, and multiple
+                other factors to generate highly accurate predictions for every
+                game outcome.
               </p>
             </div>
 
             <!-- Code/Algorithm Visualization -->
-            <div class="bg-gray-900 rounded-lg p-4 font-mono text-sm border border-gray-700">
+            <div
+              class="bg-gray-900 rounded-lg p-4 font-mono text-sm border border-gray-700"
+            >
               <div class="flex items-center space-x-2 mb-4">
                 <div class="w-3 h-3 bg-red-500 rounded-full"></div>
                 <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
@@ -129,12 +195,31 @@
                 <span class="text-gray-400 ml-4">prediction_model.py</span>
               </div>
               <div class="space-y-1 text-gray-300">
-                <div><span class="text-blue-400">def</span> <span class="text-cyan-400">predict_game_outcome</span>(team_data):</div>
-                <div class="ml-4"><span class="text-green-400">historical</span> = load_historical_data()</div>
-                <div class="ml-4"><span class="text-green-400">recent</span> = get_recent_performance()</div>
-                <div class="ml-4"><span class="text-green-400">factors</span> = analyze_other_factors()</div>
-                <div class="ml-4"><span class="text-yellow-400">prediction</span> = model.predict(historical, recent, factors)</div>
-                <div class="ml-4"><span class="text-blue-400">return</span> generate_outcome(prediction)</div>
+                <div>
+                  <span class="text-blue-400">def</span>
+                  <span class="text-cyan-400">predict_game_outcome</span
+                  >(team_data):
+                </div>
+                <div class="ml-4">
+                  <span class="text-green-400">historical</span> =
+                  load_historical_data()
+                </div>
+                <div class="ml-4">
+                  <span class="text-green-400">recent</span> =
+                  get_recent_performance()
+                </div>
+                <div class="ml-4">
+                  <span class="text-green-400">factors</span> =
+                  analyze_other_factors()
+                </div>
+                <div class="ml-4">
+                  <span class="text-yellow-400">prediction</span> =
+                  model.predict(historical, recent, factors)
+                </div>
+                <div class="ml-4">
+                  <span class="text-blue-400">return</span>
+                  generate_outcome(prediction)
+                </div>
               </div>
             </div>
           </div>
@@ -150,11 +235,15 @@
           with data-driven insights.
         </h2>
         <p class="text-gray-300 text-lg mb-8 max-w-3xl mx-auto">
-          Join successful bettors who use our AI-powered predictions to consistently beat the sportsbooks. Get started with your free trial today and see the difference data makes.
+          Join successful bettors who use our AI-powered predictions to
+          consistently beat the sportsbooks. Get started with your free trial
+          today and see the difference data makes.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
           <!-- <UButton size="lg" color="primary" class="px-8 py-3" to="/login"> Start Free Trial </UButton> -->
-          <UButton size="lg" color="primary" class="px-8 py-3" to="/mlb"> View Model Predictions </UButton>
+          <UButton size="lg" color="primary" class="px-8 py-3" to="/mlb">
+            View Model Predictions
+          </UButton>
         </div>
       </div>
     </section>
@@ -200,18 +289,33 @@
           </div>
         </div> -->
 
-        <div class="mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <div
+          class="mt-12 pt-8 flex flex-col md:flex-row justify-between items-center"
+        >
           <div class="flex items-center space-x-2 mb-4 md:mb-0">
-            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-              <svg class="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+            <div
+              class="w-8 h-8 bg-white rounded-lg flex items-center justify-center"
+            >
+              <svg
+                class="w-5 h-5 text-gray-700"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"
+                />
               </svg>
             </div>
             <span class="text-white text-xl font-bold">Edge AI Bets</span>
           </div>
           <div class="text-center md:text-right">
-            <p class="text-gray-400 text-sm mb-2">© 2025 Edge AI Bets. All Rights Reserved.</p>
-            <p class="text-gray-500 text-xs">21+ only. Bet responsibly. All predictions are for informational purposes only.</p>
+            <p class="text-gray-400 text-sm mb-2">
+              © 2025 Edge AI Bets. All Rights Reserved.
+            </p>
+            <p class="text-gray-500 text-xs">
+              21+ only. Bet responsibly. All predictions are for informational
+              purposes only.
+            </p>
           </div>
         </div>
       </div>
@@ -223,7 +327,13 @@
 // Set page meta
 useHead({
   title: "Edge AI Bets - Smarter bets, not harder ones.",
-  meta: [{ name: "description", content: "AI-powered sports picks that give you an edge — backed by data, built for bettors who want to win more, not guess more." }],
+  meta: [
+    {
+      name: "description",
+      content:
+        "AI-powered sports picks that give you an edge — backed by data, built for bettors who want to win more, not guess more.",
+    },
+  ],
 });
 </script>
 
