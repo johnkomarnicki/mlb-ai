@@ -245,23 +245,7 @@ const parlayGames = computed(() => {
           : "Low",
     }));
   }
-
-  // Fallback to top 3 games if no admin parlay exists
-  if (!topMLBGames.value || topMLBGames.value.length === 0) return [];
-
-  return topMLBGames.value.slice(0, 3).map((game) => ({
-    id: game.id,
-    matchup: `${game.awayTeamName} at ${game.homeTeamName}`,
-    pick: game.teamEdgeName,
-    teamId: game.teamEdgeId,
-    grade: game.grade,
-    confidence:
-      parseFloat(game.grade || "0") <= 3
-        ? "High"
-        : parseFloat(game.grade || "0") <= 6
-        ? "Medium"
-        : "Low",
-  }));
+  return [];
 });
 
 // Removed parlay odds since they're not accurate
@@ -285,7 +269,7 @@ const isAdmin = computed(
 </script>
 
 <template>
-  <div class="grid grid-cols-3 gap-4">
+  <div class="grid lg:grid-cols-3 gap-4">
     <!-- Left Column: Profile & Leaderboard -->
     <div class="flex flex-col gap-4">
       <!-- Past Results -->
@@ -448,14 +432,6 @@ const isAdmin = computed(
               variant="solid"
               size="sm"
               v-if="parlayGames.length > 0"
-            />
-            <UButton
-              v-if="isAdmin"
-              to="/admin/parlay"
-              color="neutral"
-              variant="ghost"
-              size="xs"
-              icon="i-lucide-settings"
             />
           </div>
         </div>

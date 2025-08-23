@@ -12,7 +12,7 @@ const user = useSupabaseUser();
 
 <template>
   <div class="min-h-screen bg-gray-50">
-    <div class="container mx-auto pb-8 pt-20 md:pt-20">
+    <div class="container mx-auto pb-8 pt-20 md:pt-20 px-4">
       <!-- Header -->
       <div class="flex items-center justify-between mb-8">
         <div>
