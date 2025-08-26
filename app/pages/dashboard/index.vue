@@ -8,6 +8,24 @@ useSeoMeta({
 });
 
 const user = useSupabaseUser();
+
+const navigationItems = [
+  {
+    label: "MLB",
+    icon: "ion-baseball-outline",
+    to: "/dashboard/mlb",
+  },
+  {
+    label: "NFL",
+    icon: "ion-american-football",
+    to: "/dashboard/nfl",
+  },
+  {
+    label: "CFB",
+    icon: "fluent-mdl2-college-football",
+    to: "/dashboard/cfb",
+  },
+];
 </script>
 
 <template>
@@ -24,32 +42,15 @@ const user = useSupabaseUser();
 
       <!-- Tab Navigation -->
       <div class="border-b border-gray-200 mb-8">
-        <nav class="flex space-x-8">
-          <NuxtLink
-            to="/dashboard/mlb"
-            class="flex items-center space-x-2 py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            active-class="border-blue-500 text-blue-600"
-          >
-            <Icon name="ion-baseball-outline" class="w-4 h-4" />
-            <span class="font-medium text-sm">MLB</span>
-          </NuxtLink>
-          <NuxtLink
-            to="/dashboard/cfb"
-            class="flex items-center space-x-2 py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            active-class="border-blue-500 text-blue-600"
-          >
-            <Icon name="fluent-mdl2-college-football" class="w-4 h-4" />
-            <span class="font-medium text-sm">CFB</span>
-          </NuxtLink>
-          <NuxtLink
-            to="/dashboard/nfl"
-            class="flex items-center space-x-2 py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            active-class="border-blue-500 text-blue-600"
-          >
-            <Icon name="ion-american-football" class="w-4 h-4" />
-            <span class="font-medium text-sm">NFL</span>
-          </NuxtLink>
-        </nav>
+        <UNavigationMenu
+          color="neutral"
+          variant="link"
+          :items="navigationItems"
+          class="w-full"
+          :ui="{
+            list: 'gap-2',
+          }"
+        />
       </div>
 
       <!-- Main Content -->

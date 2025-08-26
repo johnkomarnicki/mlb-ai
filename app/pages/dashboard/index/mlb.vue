@@ -51,7 +51,7 @@ const { data: topMLBGames } = await useAsyncData<MLBPrediction[]>(
       .select("*")
       .eq("gameDate", today)
       .order("grade", { ascending: false })
-      .limit(3);
+      .limit(5);
     if (error) throw error;
     return data;
   }
@@ -94,116 +94,6 @@ const selectedDayTotalGames = computed(() => {
   return selectedDayResults.value.filter((game) => game.winningTeam !== null)
     .length;
 });
-
-// Mock data for the dashboard sections
-const leaderboardUsers = ref([
-  {
-    id: 1,
-    name: "johnkomarnicki",
-    username: "@johnkomarnicki",
-    avatar: "/api/placeholder/32/32",
-    challenges: 54,
-    rank: "01",
-  },
-  {
-    id: 2,
-    name: "steve2212",
-    challenges: 103,
-    rank: "02",
-  },
-  {
-    id: 3,
-    name: "germanov_dev",
-    challenges: 81,
-    rank: "03",
-  },
-  {
-    id: 4,
-    name: "reestra",
-    challenges: 67,
-    rank: "04",
-  },
-  {
-    id: 5,
-    name: "Luther Sherlock",
-    challenges: 44,
-    rank: "05",
-  },
-]);
-
-const recentActivity = ref([
-  {
-    id: 1,
-    user: "Sergio Torres",
-    action: "Started the",
-    target: "Subscribe Ul",
-    type: "challenge",
-    timeAgo: "2 days ago",
-    avatar: "/api/placeholder/32/32",
-  },
-  {
-    id: 2,
-    user: "Nina Dennis",
-    action: "Started the",
-    target: "Subscribe Ul",
-    type: "challenge",
-    timeAgo: "2 days ago",
-    avatar: "/api/placeholder/32/32",
-  },
-  {
-    id: 3,
-    user: "Eng_entesar",
-    action: "Started the",
-    target: "Coffee Landing Page",
-    type: "project",
-    timeAgo: "2 days ago",
-    avatar: "/api/placeholder/32/32",
-  },
-  {
-    id: 4,
-    user: "Eng_entesar",
-    action: "Started the",
-    target: "Workout Ul",
-    type: "challenge",
-    timeAgo: "2 days ago",
-    avatar: "/api/placeholder/32/32",
-  },
-]);
-
-const recommendations = ref([
-  {
-    id: 1,
-    title: "Subscribe Ul",
-    subtitle: "Challenge",
-    type: "Free",
-    image: "/api/placeholder/200/150",
-    color: "bg-orange-500",
-  },
-  {
-    id: 2,
-    title: "Product List With Cart",
-    subtitle: "Project",
-    type: "In Progress",
-    image: "/api/placeholder/200/150",
-    color: "bg-blue-400",
-  },
-  {
-    id: 3,
-    title: "Workout Ul",
-    subtitle: "Challenge",
-    type: "Free",
-    image: "/api/placeholder/200/150",
-    color: "bg-gray-600",
-  },
-  {
-    id: 4,
-    title: "Flight Hero Ul",
-    subtitle: "Challenge",
-    type: "Free",
-    image: "/api/placeholder/200/150",
-    color: "bg-cyan-400",
-  },
-]);
 
 const correctPredictions =
   (selectedDayCorrectPredictions.value / selectedDayTotalGames.value) * 100;
@@ -248,8 +138,6 @@ const parlayGames = computed(() => {
   return [];
 });
 
-// Removed parlay odds since they're not accurate
-
 const bettingSlipUrl = computed(() => {
   // Use admin-provided FanDuel link if available
   if (todaysParlayPicks.value?.fanDuelLink) {
@@ -270,9 +158,97 @@ const isAdmin = computed(
 
 <template>
   <div class="grid lg:grid-cols-3 gap-4">
-    <!-- Left Column: Profile & Leaderboard -->
+    <!-- Middle Column: MLB ML Model -->
+    <div class="col-span-2 flex flex-col gap-4">
+      <div class="grid-default-layout">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-xl text-gray-900">MLB: ML Model</h3>
+          <UButton to="/mlb" color="primary" variant="outline" size="sm">
+            View All Games
+          </UButton>
+        </div>
+
+        <div v-if="topMLBGames && topMLBGames.length > 0" class="space-y-4">
+          <div
+            v-for="game in topMLBGames"
+            :key="game.id"
+            class="flex flex-col gap-2 border border-gray-200 rounded-lg p-4 hover:border-primary duration-200"
+          >
+            <!-- Game Header -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div>
+                  <UAvatar
+                    :src="`https://www.mlbstatic.com/team-logos/${game.awayTeamId}.svg`"
+                    :alt="game.awayTeamName || 'Away Team'"
+                    size="lg"
+                    :ui="{
+                      root: 'bg-white/75 p-1.5',
+                      image: 'object-contain rounded-none',
+                    }"
+                  />
+                </div>
+                <span class="text-xs text-gray-500">at</span>
+                <div>
+                  <UAvatar
+                    :src="`https://www.mlbstatic.com/team-logos/${game.homeTeamId}.svg`"
+                    :alt="game.homeTeamName || 'Home Team'"
+                    size="lg"
+                    :ui="{
+                      root: 'bg-white/75 p-1.5',
+                      image: 'object-contain rounded-none',
+                    }"
+                  />
+                </div>
+              </div>
+
+              <UBadge
+                :label="`Grade: ${game.grade || 'N/A'}`"
+                variant="solid"
+                size="md"
+                class="self-start"
+              />
+            </div>
+
+            <!-- Predicted Score -->
+            <div class="flex items-center gap-2 text-sm text-gray-600">
+              <span>Predicted Score:</span>
+              <span class="font-semibold">
+                {{ game.predictedAwayScore || 0 }} -
+                {{ game.predictedHomeScore || 0 }}
+              </span>
+            </div>
+
+            <!-- Projected Winner -->
+            <div
+              v-if="game.teamEdgeName"
+              class="flex items-center gap-2 text-sm"
+            >
+              <span class="text-gray-600">Projected Winner:</span>
+              <div class="flex items-center gap-1">
+                <UAvatar
+                  :src="`https://www.mlbstatic.com/team-logos/${game.teamEdgeId}.svg`"
+                  :alt="game.teamEdgeName || 'Projected Winner'"
+                  size="md"
+                  :ui="{
+                    root: 'bg-white/75 p-1.5',
+                    image: 'object-contain rounded-none',
+                  }"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="text-center py-8 text-gray-500">
+          <p>No MLB predictions available for today</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Edge AI Parlay -->
     <div class="flex flex-col gap-4">
-      <!-- Past Results -->
+      <!-- Edge AI Parlay -->
       <div class="grid-default-layout">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold text-xl text-gray-900">Model Outcomes</h3>
@@ -322,106 +298,6 @@ const isAdmin = computed(
           <p class="text-sm">No results available for selected date</p>
         </div>
       </div>
-    </div>
-
-    <!-- Middle Column: MLB ML Model -->
-    <div class="flex flex-col gap-4">
-      <div class="grid-default-layout">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="font-semibold text-xl text-gray-900">MLB: ML Model</h3>
-          <UButton to="/mlb" color="primary" variant="outline" size="sm">
-            View All Games
-          </UButton>
-        </div>
-
-        <div v-if="topMLBGames && topMLBGames.length > 0" class="space-y-4">
-          <div
-            v-for="game in topMLBGames"
-            :key="game.id"
-            class="flex flex-col gap-2 border border-gray-200 rounded-lg p-4 hover:border-primary-300 transition-colors"
-          >
-            <!-- Game Header -->
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div>
-                  <UAvatar
-                    :src="`https://www.mlbstatic.com/team-logos/${game.awayTeamId}.svg`"
-                    :alt="game.awayTeamName || 'Away Team'"
-                    size="md"
-                    :ui="{
-                      root: 'bg-white/75 p-1.5',
-                      image: 'object-contain rounded-none',
-                    }"
-                  />
-                  <span class="text-sm font-medium">{{
-                    game.awayTeamName
-                  }}</span>
-                </div>
-                <span class="text-xs text-gray-500">at</span>
-                <div>
-                  <UAvatar
-                    :src="`https://www.mlbstatic.com/team-logos/${game.homeTeamId}.svg`"
-                    :alt="game.homeTeamName || 'Home Team'"
-                    size="md"
-                    :ui="{
-                      root: 'bg-white/75 p-1.5',
-                      image: 'object-contain rounded-none',
-                    }"
-                  />
-                  <span class="text-sm font-medium">{{
-                    game.homeTeamName
-                  }}</span>
-                </div>
-              </div>
-            </div>
-
-            <UBadge
-              :label="`Grade: ${game.grade || 'N/A'}`"
-              variant="solid"
-              size="md"
-              class="self-start"
-            />
-
-            <!-- Predicted Score -->
-            <div class="flex items-center gap-2 text-sm text-gray-600">
-              <span>Predicted Score:</span>
-              <span class="font-semibold">
-                {{ game.predictedAwayScore || 0 }} -
-                {{ game.predictedHomeScore || 0 }}
-              </span>
-            </div>
-
-            <!-- Projected Winner -->
-            <div
-              v-if="game.teamEdgeName"
-              class="flex items-center gap-2 text-sm"
-            >
-              <span class="text-gray-600">Projected Winner:</span>
-              <div class="flex items-center gap-1">
-                <UAvatar
-                  :src="`https://www.mlbstatic.com/team-logos/${game.teamEdgeId}.svg`"
-                  :alt="game.teamEdgeName || 'Projected Winner'"
-                  size="md"
-                  :ui="{
-                    root: 'bg-white/75 p-1.5',
-                    image: 'object-contain rounded-none',
-                  }"
-                />
-                <span class="font-medium">{{ game.teamEdgeName }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div v-else class="text-center py-8 text-gray-500">
-          <p>No MLB predictions available for today</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right Column: Edge AI Parlay -->
-    <div class="flex flex-col gap-4">
-      <!-- Edge AI Parlay -->
       <div class="grid-default-layout">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold text-xl text-gray-900">Edge AI Parlay</h3>
