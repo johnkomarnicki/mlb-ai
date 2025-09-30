@@ -37,6 +37,9 @@ const items: DropdownMenuItem[][] = [
   ],
 ];
 
+const isAdmin =
+  user.value && user.value.email === "johnkomarnickicontact@gmail.com";
+
 // function toProfile() {
 //   navigateTo(`/profile/${user.value?.id}`);
 // }
@@ -50,7 +53,6 @@ function closeMobileMenu() {
 }
 
 async function logout() {
-  console.log("hello");
   try {
     const { error } = await auth.signOut();
     if (error) throw error;
@@ -119,7 +121,29 @@ async function logout() {
         >
           MLB Predictions
         </NuxtLink>
-        <!-- <NuxtLink to="#features" class="transition-colors" :class="isHomePage ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'"> How It Works </NuxtLink> -->
+        <NuxtLink
+          to="/mlb/postseason"
+          class="transition-colors"
+          :class="
+            isHomePage
+              ? 'text-gray-300 hover:text-white'
+              : 'text-gray-600 hover:text-gray-900'
+          "
+        >
+          MLB Postseason Bracket
+        </NuxtLink>
+        <NuxtLink
+          v-if="isAdmin"
+          to="/admin/dashboard"
+          class="transition-colors"
+          :class="
+            isHomePage
+              ? 'text-gray-300 hover:text-white'
+              : 'text-gray-600 hover:text-gray-900'
+          "
+        >
+          Admin
+        </NuxtLink>
       </div>
 
       <!-- CTA Buttons -->

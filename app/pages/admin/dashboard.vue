@@ -1,4 +1,14 @@
 <script setup lang="ts">
+// Redirect if not admin
+const user = useSupabaseUser();
+
+if (!user.value || user.value.email !== "johnkomarnickicontact@gmail.com") {
+  throw createError({
+    statusCode: 403,
+    statusMessage: "Access Denied",
+  });
+}
+
 const toast = useToast();
 const loadingMLBModel = ref(false);
 async function runMlbModel() {
