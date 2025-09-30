@@ -715,11 +715,11 @@ await useAsyncData(() => {
     <!-- Desktop: 7 columns, Mobile: Single column with sections -->
     <div class="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-2 mt-8">
       <!-- AL Wild Card -->
-      <div>
+      <div class="flex flex-col justify-center">
         <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4">AL Wild Card</div>
-        <div class="flex flex-row lg:flex-col gap-4 lg:gap-8 justify-center items-center">
+        <div class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center">
         <div
-          class="flex flex-col gap-2 lg:gap-4"
+          class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
           v-for="matchup in wildcardMatchups.americanLeague"
         >
           <UAvatar
@@ -778,11 +778,11 @@ await useAsyncData(() => {
         </div>
       </div>
       <!-- ALDS -->
-      <div>
+      <div class="flex flex-col justify-center">
         <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">AL Division Series</div>
-        <div class="flex flex-row lg:flex-col gap-4 lg:gap-8 justify-center items-center">
+        <div class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center">
         <div
-          class="flex flex-col gap-4"
+          class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
           v-for="(matchup, index) in divisionSeriesMatchups.americanLeague"
           :key="`alds-${index}`"
         >
@@ -855,9 +855,10 @@ await useAsyncData(() => {
       </div>
 
       <!-- ALCS -->
-      <div>
+      <div class="flex flex-col justify-center">
         <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">ALCS</div>
-        <div class="flex flex-row lg:flex-col gap-4 justify-center items-center">
+        <div class="flex flex-row lg:flex-col gap-6 lg:gap-4 justify-center items-center">
+        <div class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50">
         <!-- ALCS Team 1 -->
         <UAvatar
           v-if="championshipSeriesMatchups.americanLeague.team1"
@@ -938,12 +939,14 @@ await useAsyncData(() => {
           size="3xl"
         />
         </div>
+        </div>
       </div>
 
       <!-- World Series -->
-      <div>
+      <div class="flex flex-col justify-center">
         <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">World Series</div>
-        <div class="flex flex-row lg:flex-col gap-4 lg:gap-8 justify-center items-center">
+        <div class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center">
+        <div class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50">
         <!-- AL Champion -->
         <UAvatar
           v-if="worldSeriesMatchup.americanLeague"
@@ -1008,12 +1011,14 @@ await useAsyncData(() => {
           size="3xl"
         />
         </div>
+        </div>
       </div>
 
       <!-- NLCS -->
-      <div>
+      <div class="flex flex-col justify-center">
         <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">NLCS</div>
-        <div class="flex flex-row lg:flex-col gap-4 justify-center items-center">
+        <div class="flex flex-row lg:flex-col gap-6 lg:gap-4 justify-center items-center">
+        <div class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50">
         <!-- NLCS Team 1 -->
         <UAvatar
           v-if="championshipSeriesMatchups.nationalLeague.team1"
@@ -1094,14 +1099,15 @@ await useAsyncData(() => {
           size="3xl"
         />
         </div>
+        </div>
       </div>
 
       <!-- NLDS -->
-      <div>
+      <div class="flex flex-col justify-center">
         <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">NL Division Series</div>
-        <div class="flex flex-row lg:flex-col gap-4 lg:gap-8 justify-center items-center">
+        <div class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center">
         <div
-          class="flex flex-col gap-4"
+          class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
           v-for="(matchup, index) in divisionSeriesMatchups.nationalLeague"
           :key="`nlds-${index}`"
         >
@@ -1174,11 +1180,11 @@ await useAsyncData(() => {
       </div>
 
       <!-- NL Wild Card -->
-      <div>
+      <div class="flex flex-col justify-center">
         <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">NL Wild Card</div>
-        <div class="flex flex-row lg:flex-col gap-4 lg:gap-8 justify-center items-center">
+        <div class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center">
         <div
-          class="flex flex-col gap-4"
+          class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
           v-for="matchup in wildcardMatchups.nationalLeague"
         >
           <UAvatar
