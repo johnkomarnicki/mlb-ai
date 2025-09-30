@@ -226,6 +226,18 @@ async function logout() {
           >
             MLB Predictions
           </NuxtLink>
+          <NuxtLink
+            to="/mlb/postseason"
+            class="block transition-colors py-2"
+            :class="
+              isHomePage
+                ? 'text-gray-300 hover:text-white'
+                : 'text-gray-600 hover:text-gray-900'
+            "
+            @click="closeMobileMenu"
+          >
+            MLB Postseason Bracket
+          </NuxtLink>
           <div
             v-if="!user"
             class="pt-2"

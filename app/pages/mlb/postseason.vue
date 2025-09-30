@@ -176,6 +176,46 @@ function advanceWildcardWinner(league, matchupIndex, winningSeed) {
   matchup.winner = winningSeed;
   matchup.winnerId = winningTeamId;
 
+  // Determine which division series matchup this affects
+  const dsMatchupIndex = matchupIndex === 0 ? 0 : 1;
+
+  // Clear any dependent selections if changing a pick
+  if (divisionSeriesMatchups[league][dsMatchupIndex].lower !== winningSeed) {
+    // Clear division series winner if it was the previous wildcard winner
+    if (divisionSeriesMatchups[league][dsMatchupIndex].winner === divisionSeriesMatchups[league][dsMatchupIndex].lower) {
+      divisionSeriesMatchups[league][dsMatchupIndex].winner = null;
+      divisionSeriesMatchups[league][dsMatchupIndex].winnerId = null;
+
+      // Clear championship series if this team was there
+      if (dsMatchupIndex === 0 && championshipSeriesMatchups[league].team1 === divisionSeriesMatchups[league][dsMatchupIndex].lower) {
+        championshipSeriesMatchups[league].team1 = null;
+        championshipSeriesMatchups[league].team1Id = null;
+      } else if (dsMatchupIndex === 1 && championshipSeriesMatchups[league].team2 === divisionSeriesMatchups[league][dsMatchupIndex].lower) {
+        championshipSeriesMatchups[league].team2 = null;
+        championshipSeriesMatchups[league].team2Id = null;
+      }
+
+      // Clear championship series winner if affected
+      if (championshipSeriesMatchups[league].winner) {
+        championshipSeriesMatchups[league].winner = null;
+        championshipSeriesMatchups[league].winnerId = null;
+
+        // Clear World Series if affected
+        if (league === "americanLeague") {
+          worldSeriesMatchup.americanLeague = null;
+          worldSeriesMatchup.americanLeagueId = null;
+        } else {
+          worldSeriesMatchup.nationalLeague = null;
+          worldSeriesMatchup.nationalLeagueId = null;
+        }
+
+        // Clear World Series champion if affected
+        worldSeriesMatchup.champion = null;
+        worldSeriesMatchup.championId = null;
+      }
+    }
+  }
+
   // Advance to Division Series
   // 3v6 winner faces 2 seed (top position, index 0)
   // 4v5 winner faces 1 seed (bottom position, index 1)
@@ -211,8 +251,41 @@ function advanceDivisionSeriesWinner(league, matchupIndex, winningSeed) {
       ? americanLeaguePlayoffs[winningSeed - 1].id
       : nationalLeaguePlayoffs[winningSeed - 1].id;
 
+  const previousWinner = divisionSeriesMatchups[league][matchupIndex].winner;
+
   divisionSeriesMatchups[league][matchupIndex].winner = winningSeed;
   divisionSeriesMatchups[league][matchupIndex].winnerId = winningTeamId;
+
+  // Clear dependent selections if changing a pick
+  if (previousWinner && previousWinner !== winningSeed) {
+    // Clear championship series for this team
+    if (matchupIndex === 0 && championshipSeriesMatchups[league].team1 === previousWinner) {
+      championshipSeriesMatchups[league].team1 = null;
+      championshipSeriesMatchups[league].team1Id = null;
+    } else if (matchupIndex === 1 && championshipSeriesMatchups[league].team2 === previousWinner) {
+      championshipSeriesMatchups[league].team2 = null;
+      championshipSeriesMatchups[league].team2Id = null;
+    }
+
+    // Clear championship series winner if it was the previous winner
+    if (championshipSeriesMatchups[league].winner === previousWinner) {
+      championshipSeriesMatchups[league].winner = null;
+      championshipSeriesMatchups[league].winnerId = null;
+
+      // Clear World Series
+      if (league === "americanLeague") {
+        worldSeriesMatchup.americanLeague = null;
+        worldSeriesMatchup.americanLeagueId = null;
+      } else {
+        worldSeriesMatchup.nationalLeague = null;
+        worldSeriesMatchup.nationalLeagueId = null;
+      }
+
+      // Clear World Series champion
+      worldSeriesMatchup.champion = null;
+      worldSeriesMatchup.championId = null;
+    }
+  }
 
   // Advance to Championship Series
   if (matchupIndex === 0) {
@@ -245,8 +318,20 @@ function advanceChampionshipSeriesWinner(league, winningSeed) {
       ? americanLeaguePlayoffs[winningSeed - 1].id
       : nationalLeaguePlayoffs[winningSeed - 1].id;
 
+  const previousWinner = championshipSeriesMatchups[league].winner;
+
   championshipSeriesMatchups[league].winner = winningSeed;
   championshipSeriesMatchups[league].winnerId = winningTeamId;
+
+  // Clear dependent selections if changing a pick
+  if (previousWinner && previousWinner !== winningSeed) {
+    // Clear World Series champion if it was the previous winner
+    if (worldSeriesMatchup.champion === previousWinner) {
+      worldSeriesMatchup.champion = null;
+      worldSeriesMatchup.championId = null;
+    }
+  }
+
   worldSeriesMatchup[league] = winningSeed;
   worldSeriesMatchup[league + "Id"] = winningTeamId;
 
@@ -536,10 +621,10 @@ await useAsyncData(() => {
 </script>
 
 <template>
-  <div class="container mx-auto mt-20 px-4">
+  <div class="container mx-auto py-8 lg:py-12 mt-4 lg:mt-8 px-4">
     <!-- Page Title -->
-    <div class="text-center mb-12">
-      <h1 class="text-4xl font-bold text-gray-900 mb-2">
+    <div class="text-center mb-8 lg:mb-12">
+      <h1 class="text-2xl lg:text-4xl font-bold text-gray-900 mb-2">
         2025 MLB Postseason Bracket
       </h1>
       <p class="text-gray-600" v-if="!isBracketLocked">
@@ -598,27 +683,27 @@ await useAsyncData(() => {
       </div>
 
       <!-- Points System Info -->
-      <div class="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-        <h3 class="text-sm font-semibold text-gray-900 mb-2">
-          <UIcon name="i-heroicons-trophy" class="w-4 h-4 inline mr-1" />
+      <div class="mt-4 lg:mt-6 p-3 lg:p-4 bg-gray-50 border border-gray-200 rounded-lg">
+        <h3 class="text-xs lg:text-sm font-semibold text-gray-900 mb-2">
+          <UIcon name="i-heroicons-trophy" class="w-3 h-3 lg:w-4 lg:h-4 inline mr-1" />
           Point System
         </h3>
-        <div class="flex flex-wrap justify-center gap-4 text-xs">
-          <div class="flex items-center gap-1">
-            <span class="font-semibold text-gray-700">Wild Card:</span>
-            <span class="text-gray-600">10 points</span>
+        <div class="grid grid-cols-2 lg:flex lg:flex-wrap justify-center gap-2 lg:gap-4">
+          <div class="flex flex-col sm:flex-row items-center gap-0 sm:gap-1 text-center sm:text-left">
+            <span class="font-semibold text-gray-700 text-xs sm:text-sm">Wild Card:</span>
+            <span class="text-gray-600 text-xs sm:text-sm">10 pts</span>
           </div>
-          <div class="flex items-center gap-1">
-            <span class="font-semibold text-gray-700">Division Series:</span>
-            <span class="text-gray-600">20 points</span>
+          <div class="flex flex-col sm:flex-row items-center gap-0 sm:gap-1 text-center sm:text-left">
+            <span class="font-semibold text-gray-700 text-xs sm:text-sm">Division Series:</span>
+            <span class="text-gray-600 text-xs sm:text-sm">20 pts</span>
           </div>
-          <div class="flex items-center gap-1">
-            <span class="font-semibold text-gray-700">Championship Series:</span>
-            <span class="text-gray-600">40 points</span>
+          <div class="flex flex-col sm:flex-row items-center gap-0 sm:gap-1 text-center sm:text-left">
+            <span class="font-semibold text-gray-700 text-xs sm:text-sm">Championship:</span>
+            <span class="text-gray-600 text-xs sm:text-sm">40 pts</span>
           </div>
-          <div class="flex items-center gap-1">
-            <span class="font-semibold text-gray-700">World Series:</span>
-            <span class="text-gray-600">80 points</span>
+          <div class="flex flex-col sm:flex-row items-center gap-0 sm:gap-1 text-center sm:text-left">
+            <span class="font-semibold text-gray-700 text-xs sm:text-sm">World Series:</span>
+            <span class="text-gray-600 text-xs sm:text-sm">80 pts</span>
           </div>
         </div>
         <p class="text-center text-xs text-gray-500 mt-2">
@@ -627,11 +712,14 @@ await useAsyncData(() => {
       </div>
     </div>
 
-    <div class="grid grid-cols-7 gap-4 mt-8">
+    <!-- Desktop: 7 columns, Mobile: Single column with sections -->
+    <div class="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-2 mt-8">
       <!-- AL Wild Card -->
-      <div class="flex flex-col gap-8">
+      <div>
+        <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4">AL Wild Card</div>
+        <div class="flex flex-row lg:flex-col gap-4 lg:gap-8 justify-center items-center">
         <div
-          class="flex flex-col gap-4"
+          class="flex flex-col gap-2 lg:gap-4"
           v-for="matchup in wildcardMatchups.americanLeague"
         >
           <UAvatar
@@ -687,9 +775,12 @@ await useAsyncData(() => {
             "
           />
         </div>
+        </div>
       </div>
       <!-- ALDS -->
-      <div class="flex flex-col gap-8 justify-center">
+      <div>
+        <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">AL Division Series</div>
+        <div class="flex flex-row lg:flex-col gap-4 lg:gap-8 justify-center items-center">
         <div
           class="flex flex-col gap-4"
           v-for="(matchup, index) in divisionSeriesMatchups.americanLeague"
@@ -760,10 +851,13 @@ await useAsyncData(() => {
             size="3xl"
           />
         </div>
+        </div>
       </div>
 
       <!-- ALCS -->
-      <div class="flex flex-col gap-4 justify-center">
+      <div>
+        <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">ALCS</div>
+        <div class="flex flex-row lg:flex-col gap-4 justify-center items-center">
         <!-- ALCS Team 1 -->
         <UAvatar
           v-if="championshipSeriesMatchups.americanLeague.team1"
@@ -843,10 +937,13 @@ await useAsyncData(() => {
           }"
           size="3xl"
         />
+        </div>
       </div>
 
       <!-- World Series -->
-      <div class="flex flex-col gap-8 justify-center">
+      <div>
+        <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">World Series</div>
+        <div class="flex flex-row lg:flex-col gap-4 lg:gap-8 justify-center items-center">
         <!-- AL Champion -->
         <UAvatar
           v-if="worldSeriesMatchup.americanLeague"
@@ -910,10 +1007,13 @@ await useAsyncData(() => {
           }"
           size="3xl"
         />
+        </div>
       </div>
 
       <!-- NLCS -->
-      <div class="flex flex-col gap-4 justify-center">
+      <div>
+        <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">NLCS</div>
+        <div class="flex flex-row lg:flex-col gap-4 justify-center items-center">
         <!-- NLCS Team 1 -->
         <UAvatar
           v-if="championshipSeriesMatchups.nationalLeague.team1"
@@ -993,10 +1093,13 @@ await useAsyncData(() => {
           }"
           size="3xl"
         />
+        </div>
       </div>
 
       <!-- NLDS -->
-      <div class="flex flex-col gap-8 justify-center">
+      <div>
+        <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">NL Division Series</div>
+        <div class="flex flex-row lg:flex-col gap-4 lg:gap-8 justify-center items-center">
         <div
           class="flex flex-col gap-4"
           v-for="(matchup, index) in divisionSeriesMatchups.nationalLeague"
@@ -1067,10 +1170,13 @@ await useAsyncData(() => {
             size="3xl"
           />
         </div>
+        </div>
       </div>
 
       <!-- NL Wild Card -->
-      <div class="flex flex-col gap-8">
+      <div>
+        <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">NL Wild Card</div>
+        <div class="flex flex-row lg:flex-col gap-4 lg:gap-8 justify-center items-center">
         <div
           class="flex flex-col gap-4"
           v-for="matchup in wildcardMatchups.nationalLeague"
@@ -1127,6 +1233,7 @@ await useAsyncData(() => {
               )
             "
           />
+        </div>
         </div>
       </div>
     </div>
