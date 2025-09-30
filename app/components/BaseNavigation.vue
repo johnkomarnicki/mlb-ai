@@ -122,7 +122,7 @@ async function logout() {
           MLB Predictions
         </NuxtLink>
         <NuxtLink
-          to="/mlb/postseason"
+          :to="user ? `/mlb/postseason/${user.id}` : '/mlb/postseason'"
           class="transition-colors"
           :class="
             isHomePage
@@ -227,7 +227,7 @@ async function logout() {
             MLB Predictions
           </NuxtLink>
           <NuxtLink
-            to="/mlb/postseason"
+            :to="user ? `/mlb/postseason/${user.id}` : '/mlb/postseason'"
             class="block transition-colors py-2"
             :class="
               isHomePage

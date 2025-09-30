@@ -12,22 +12,75 @@ useSeoMeta({
     "Make your predictions for the 2025 MLB Postseason. Pick winners for Wild Card, Division Series, Championship Series, and World Series matchups.",
 });
 
+// Get the userId from the route
+const route = useRoute();
+const bracketUserId = computed(() => route.params.userId);
+
 // Supabase client and user
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
 const toast = useToast();
 
+// Check if viewing own bracket - use ref to control hydration
+const isOwnBracket = ref(false);
+const isViewOnly = computed(() => !isOwnBracket.value);
+
+// Only update after hydration to avoid mismatches
+onMounted(() => {
+  isOwnBracket.value = user.value?.id === bracketUserId.value;
+});
+
+// Watch for user changes
+watch(user, (newUser) => {
+  isOwnBracket.value = newUser?.id === bracketUserId.value;
+});
+
+// Helper function to get team avatar classes
+function getTeamAvatarClasses(isWinner = false, isClickable = false) {
+  const baseClasses = 'p-2 shadow-md transition-all';
+  const interactiveClasses = isClickable && isOwnBracket.value && !isBracketLocked.value
+    ? 'hover:shadow-lg cursor-pointer'
+    : 'cursor-not-allowed opacity-90';
+  const winnerClasses = isWinner
+    ? 'bg-blue-100 ring-2 ring-blue-500'
+    : 'bg-white/75';
+
+  return `${baseClasses} ${interactiveClasses} ${winnerClasses}`;
+}
+
+// Helper for World Series champion classes
+function getChampionAvatarClasses(isWinner = false, isClickable = false) {
+  const baseClasses = 'p-2 shadow-md transition-all';
+  const interactiveClasses = isClickable && isOwnBracket.value && !isBracketLocked.value
+    ? 'hover:shadow-lg cursor-pointer'
+    : 'cursor-not-allowed opacity-90';
+  const winnerClasses = isWinner
+    ? 'bg-yellow-100 ring-2 ring-yellow-500'
+    : 'bg-white/75';
+
+  return `${baseClasses} ${interactiveClasses} ${winnerClasses}`;
+}
+
 // First game deadline - September 30, 2025, 1:08 PM EST
 const FIRST_GAME_TIME = new Date("2025-09-30T13:08:00-04:00");
 
-// Bracket lock state
-const isBracketLocked = ref(false);
-const timeRemaining = ref({
-  days: 0,
-  hours: 0,
-  minutes: 0,
-  seconds: 0,
-});
+// Bracket lock state - Initialize on server too
+const now = new Date();
+const initialLocked = FIRST_GAME_TIME.getTime() <= now.getTime();
+const isBracketLocked = ref(initialLocked);
+
+// Calculate initial time remaining on server
+const initialDifference = FIRST_GAME_TIME.getTime() - now.getTime();
+const initialTimeRemaining = initialDifference <= 0
+  ? { days: 0, hours: 0, minutes: 0, seconds: 0 }
+  : {
+      days: Math.floor(initialDifference / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((initialDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+      minutes: Math.floor((initialDifference % (1000 * 60 * 60)) / (1000 * 60)),
+      seconds: Math.floor((initialDifference % (1000 * 60)) / 1000),
+    };
+
+const timeRemaining = ref(initialTimeRemaining);
 
 // Calculate time remaining
 function updateCountdown() {
@@ -51,15 +104,18 @@ function updateCountdown() {
   return true; // Continue the interval
 }
 
-// Set up countdown timer
+// Set up countdown timer - only update on client after hydration
 let countdownInterval;
 onMounted(() => {
-  updateCountdown();
-  countdownInterval = setInterval(() => {
-    if (!updateCountdown()) {
-      clearInterval(countdownInterval);
-    }
-  }, 1000);
+  // Small delay to ensure hydration completes
+  setTimeout(() => {
+    updateCountdown();
+    countdownInterval = setInterval(() => {
+      if (!updateCountdown()) {
+        clearInterval(countdownInterval);
+      }
+    }, 1000);
+  }, 100);
 });
 
 onUnmounted(() => {
@@ -253,8 +309,8 @@ function advanceWildcardWinner(league, matchupIndex, winningSeed) {
     divisionSeriesMatchups[league][1].lowerId = winningTeamId;
   }
 
-  // Auto-save after each selection
-  if (user.value) {
+  // Auto-save after each selection (only for own bracket)
+  if (user.value && isOwnBracket.value) {
     saveBracketToDatabase();
   }
 }
@@ -326,8 +382,8 @@ function advanceDivisionSeriesWinner(league, matchupIndex, winningSeed) {
     championshipSeriesMatchups[league].team2Id = winningTeamId;
   }
 
-  // Auto-save after each selection
-  if (user.value) {
+  // Auto-save after each selection (only for own bracket)
+  if (user.value && isOwnBracket.value) {
     saveBracketToDatabase();
   }
 }
@@ -365,13 +421,13 @@ function advanceChampionshipSeriesWinner(league, winningSeed) {
   worldSeriesMatchup[league] = winningSeed;
   worldSeriesMatchup[league + "Id"] = winningTeamId;
 
-  // Auto-save after each selection
-  if (user.value) {
+  // Auto-save after each selection (only for own bracket)
+  if (user.value && isOwnBracket.value) {
     saveBracketToDatabase();
   }
 }
 
-function crownWorldSeriesChampion(winningSeed) {
+function crownWorldSeriesChampion(winningTeamId, isFromAL) {
   // Check if bracket is locked
   if (isBracketLocked.value) {
     toast.add({
@@ -382,16 +438,21 @@ function crownWorldSeriesChampion(winningSeed) {
     return;
   }
 
-  const isAL = winningSeed === worldSeriesMatchup.americanLeague;
-  const winningTeamId = isAL
-    ? americanLeaguePlayoffs[winningSeed - 1].id
-    : nationalLeaguePlayoffs[winningSeed - 1].id;
+  // Find the seed based on team ID
+  let winningSeed;
+  if (isFromAL) {
+    const team = americanLeaguePlayoffs.find(t => t.id === winningTeamId);
+    winningSeed = team?.seed;
+  } else {
+    const team = nationalLeaguePlayoffs.find(t => t.id === winningTeamId);
+    winningSeed = team?.seed;
+  }
 
   worldSeriesMatchup.champion = winningSeed;
   worldSeriesMatchup.championId = winningTeamId;
 
-  // Auto-save after each selection
-  if (user.value) {
+  // Auto-save after each selection (only for own bracket)
+  if (user.value && isOwnBracket.value) {
     saveBracketToDatabase();
   }
 }
@@ -471,18 +532,17 @@ async function saveBracketToDatabase() {
 // Load bracket from Supabase
 async function loadBracketFromDatabase() {
   try {
-    if (!user.value) return;
-
+    // Load the bracket for the userId in the URL
     const { data, error } = await supabase
       .from("playoff_brackets")
       .select("*")
-      .eq("user_id", user.value.id)
+      .eq("user_id", bracketUserId.value)
       .eq("year", 2025)
       .eq("bracket_name", "My 2025 Bracket")
       .single();
 
     if (error && error.code !== "PGRST116") throw error; // PGRST116 = no rows
-    if (!data) return;
+    if (!data) return null;
 
     // Restore wildcard winners
     if (data.al_wildcard_1_winner) {
@@ -635,6 +695,8 @@ async function loadBracketFromDatabase() {
         worldSeriesMatchup.championId = data.world_series_champion;
       }
     }
+
+    return data;
   } catch (error) {
     console.error("Error loading bracket:", error);
     toast.add({
@@ -642,75 +704,351 @@ async function loadBracketFromDatabase() {
       title: "Failed to load bracket",
       description: error.message,
     });
+    return null;
   }
 }
 
-await useAsyncData(() => {
-  loadBracketFromDatabase();
+// Use computed to access the allBrackets from bracketData
+const allBrackets = computed(() => bracketData.value?.allBrackets || []);
+
+// Get the current bracket owner's info
+const currentBracketOwner = computed(() => {
+  return allBrackets.value.find((b) => b.user_id === bracketUserId.value);
+});
+
+// Fetch all users who have created brackets
+async function fetchAllBrackets() {
+  try {
+    const { data, error } = await supabase
+      .from("playoff_brackets")
+      .select("user_id, created_at, updated_at, bracket_name")
+      .eq("year", 2025);
+
+    if (error) throw error; // Debug log
+
+    // Get unique users and fetch their details
+    if (data && data.length > 0) {
+      const uniqueUserIds = [...new Set(data.map((b) => b.user_id))];
+
+      let userProfiles = [];
+
+      try {
+        // Try to use the database function to get user display names
+        const { data: userDisplayNames, error: funcError } = await supabase.rpc(
+          "get_user_display_names",
+          { user_ids: uniqueUserIds }
+        );
+
+        if (userDisplayNames && !funcError) {
+          userProfiles = userDisplayNames.map((user) => ({
+            user_id: user.user_id,
+            email: user.email,
+            name: user.display_name,
+            isCurrentUser: user.user_id === bracketUserId.value,
+            isOwnBracket: user.user_id === user.value?.id,
+          }));
+        } else {
+          // Fallback: try other methods for each user
+          for (const userId of uniqueUserIds) {
+            let userName = null;
+            let userEmail = null;
+
+            // Check if this is the current user
+            if (userId === user.value?.id) {
+              userName =
+                user.value.user_metadata?.full_name ||
+                user.value.user_metadata?.name ||
+                user.value.user_metadata?.display_name ||
+                user.value.email?.split("@")[0];
+              userEmail = user.value.email;
+            }
+
+            userProfiles.push({
+              user_id: userId,
+              email: userEmail,
+              name: userName || `User ${userId.substring(0, 8)}`,
+              isCurrentUser: userId === bracketUserId.value,
+              isOwnBracket: userId === user.value?.id,
+            });
+          }
+        }
+      } catch (err) {
+        // Ultimate fallback
+        userProfiles = uniqueUserIds.map((userId) => ({
+          user_id: userId,
+          email: null,
+          name: `User ${userId.substring(0, 8)}`,
+          isCurrentUser: userId === bracketUserId,
+          isOwnBracket: userId === user.value?.id,
+        }));
+      }
+      // Debug log
+      return userProfiles;
+    }
+    return [];
+  } catch (error) {
+    console.error("Error fetching brackets:", error);
+    return [];
+  }
+}
+
+// Using the userId as the key will automatically refetch when it changes
+const { data: bracketData, pending } = await useAsyncData(
+  () => route.params.userId,
+  async () => {
+    const [bracketResult, bracketsResult] = await Promise.all([
+      loadBracketFromDatabase(),
+      fetchAllBrackets(),
+    ]);
+    return {
+      bracket: bracketResult,
+      allBrackets: bracketsResult,
+    };
+  }
+);
+
+// Watch for bracketData changes and reapply the loaded bracket
+watchEffect(() => {
+  if (bracketData.value?.bracket) {
+    // Reapply the bracket data when it's available
+    // This ensures the reactive state is properly set after hydration
+    const data = bracketData.value.bracket;
+
+    // Restore wildcard winners
+    if (data.al_wildcard_1_winner) {
+      const seed = americanLeaguePlayoffs.find(
+        (t) => t.id === data.al_wildcard_1_winner
+      )?.seed;
+      if (seed) {
+        wildcardMatchups.americanLeague[0].winner = seed;
+        wildcardMatchups.americanLeague[0].winnerId = data.al_wildcard_1_winner;
+        divisionSeriesMatchups.americanLeague[0].lower = seed;
+        divisionSeriesMatchups.americanLeague[0].lowerId = data.al_wildcard_1_winner;
+      }
+    }
+
+    if (data.al_wildcard_2_winner) {
+      const seed = americanLeaguePlayoffs.find(
+        (t) => t.id === data.al_wildcard_2_winner
+      )?.seed;
+      if (seed) {
+        wildcardMatchups.americanLeague[1].winner = seed;
+        wildcardMatchups.americanLeague[1].winnerId = data.al_wildcard_2_winner;
+        divisionSeriesMatchups.americanLeague[1].lower = seed;
+        divisionSeriesMatchups.americanLeague[1].lowerId = data.al_wildcard_2_winner;
+      }
+    }
+
+    if (data.nl_wildcard_1_winner) {
+      const seed = nationalLeaguePlayoffs.find(
+        (t) => t.id === data.nl_wildcard_1_winner
+      )?.seed;
+      if (seed) {
+        wildcardMatchups.nationalLeague[0].winner = seed;
+        wildcardMatchups.nationalLeague[0].winnerId = data.nl_wildcard_1_winner;
+        divisionSeriesMatchups.nationalLeague[0].lower = seed;
+        divisionSeriesMatchups.nationalLeague[0].lowerId = data.nl_wildcard_1_winner;
+      }
+    }
+
+    if (data.nl_wildcard_2_winner) {
+      const seed = nationalLeaguePlayoffs.find(
+        (t) => t.id === data.nl_wildcard_2_winner
+      )?.seed;
+      if (seed) {
+        wildcardMatchups.nationalLeague[1].winner = seed;
+        wildcardMatchups.nationalLeague[1].winnerId = data.nl_wildcard_2_winner;
+        divisionSeriesMatchups.nationalLeague[1].lower = seed;
+        divisionSeriesMatchups.nationalLeague[1].lowerId = data.nl_wildcard_2_winner;
+      }
+    }
+
+    // Restore division series winners
+    if (data.al_division_1_winner) {
+      const seed = americanLeaguePlayoffs.find(
+        (t) => t.id === data.al_division_1_winner
+      )?.seed;
+      if (seed) {
+        divisionSeriesMatchups.americanLeague[0].winner = seed;
+        divisionSeriesMatchups.americanLeague[0].winnerId = data.al_division_1_winner;
+        championshipSeriesMatchups.americanLeague.team1 = seed;
+        championshipSeriesMatchups.americanLeague.team1Id = data.al_division_1_winner;
+      }
+    }
+
+    if (data.al_division_2_winner) {
+      const seed = americanLeaguePlayoffs.find(
+        (t) => t.id === data.al_division_2_winner
+      )?.seed;
+      if (seed) {
+        divisionSeriesMatchups.americanLeague[1].winner = seed;
+        divisionSeriesMatchups.americanLeague[1].winnerId = data.al_division_2_winner;
+        championshipSeriesMatchups.americanLeague.team2 = seed;
+        championshipSeriesMatchups.americanLeague.team2Id = data.al_division_2_winner;
+      }
+    }
+
+    if (data.nl_division_1_winner) {
+      const seed = nationalLeaguePlayoffs.find(
+        (t) => t.id === data.nl_division_1_winner
+      )?.seed;
+      if (seed) {
+        divisionSeriesMatchups.nationalLeague[0].winner = seed;
+        divisionSeriesMatchups.nationalLeague[0].winnerId = data.nl_division_1_winner;
+        championshipSeriesMatchups.nationalLeague.team1 = seed;
+        championshipSeriesMatchups.nationalLeague.team1Id = data.nl_division_1_winner;
+      }
+    }
+
+    if (data.nl_division_2_winner) {
+      const seed = nationalLeaguePlayoffs.find(
+        (t) => t.id === data.nl_division_2_winner
+      )?.seed;
+      if (seed) {
+        divisionSeriesMatchups.nationalLeague[1].winner = seed;
+        divisionSeriesMatchups.nationalLeague[1].winnerId = data.nl_division_2_winner;
+        championshipSeriesMatchups.nationalLeague.team2 = seed;
+        championshipSeriesMatchups.nationalLeague.team2Id = data.nl_division_2_winner;
+      }
+    }
+
+    // Restore championship series winners
+    if (data.al_championship_winner) {
+      const seed = americanLeaguePlayoffs.find(
+        (t) => t.id === data.al_championship_winner
+      )?.seed;
+      if (seed) {
+        championshipSeriesMatchups.americanLeague.winner = seed;
+        championshipSeriesMatchups.americanLeague.winnerId = data.al_championship_winner;
+        worldSeriesMatchup.americanLeague = seed;
+        worldSeriesMatchup.americanLeagueId = data.al_championship_winner;
+      }
+    }
+
+    if (data.nl_championship_winner) {
+      const seed = nationalLeaguePlayoffs.find(
+        (t) => t.id === data.nl_championship_winner
+      )?.seed;
+      if (seed) {
+        championshipSeriesMatchups.nationalLeague.winner = seed;
+        championshipSeriesMatchups.nationalLeague.winnerId = data.nl_championship_winner;
+        worldSeriesMatchup.nationalLeague = seed;
+        worldSeriesMatchup.nationalLeagueId = data.nl_championship_winner;
+      }
+    }
+
+    // Restore World Series champion
+    if (data.world_series_champion) {
+      const alSeed = americanLeaguePlayoffs.find(
+        (t) => t.id === data.world_series_champion
+      )?.seed;
+      const nlSeed = nationalLeaguePlayoffs.find(
+        (t) => t.id === data.world_series_champion
+      )?.seed;
+      const seed = alSeed || nlSeed;
+      if (seed) {
+        worldSeriesMatchup.champion = seed;
+        worldSeriesMatchup.championId = data.world_series_champion;
+      }
+    }
+  }
 });
 </script>
 
 <template>
   <div class="container mx-auto py-8 lg:py-12 mt-4 lg:mt-8 px-4">
+    <!-- Banner for viewing other user's bracket -->
+    <ClientOnly>
+      <div v-if="!isOwnBracket" class="mb-6 lg:mb-8">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+          >
+            <div>
+              <p class="text-sm font-medium text-blue-900">
+                You are viewing
+                {{ currentBracketOwner?.name || "another user" }}'s bracket
+              </p>
+              <p class="text-xs text-blue-700" v-if="currentBracketOwner?.email">
+                {{ currentBracketOwner.email }}
+              </p>
+            </div>
+            <NuxtLink
+              v-if="user"
+              :to="`/mlb/postseason/${user.id}`"
+              class="text-sm font-medium text-blue-600 hover:text-blue-800 underline whitespace-nowrap"
+            >
+              View Your Bracket →
+            </NuxtLink>
+          </div>
+        </div>
+      </div>
+    </ClientOnly>
+
     <!-- Page Title -->
     <div class="text-center mb-8 lg:mb-12">
       <h1 class="text-2xl lg:text-4xl font-bold text-gray-900 mb-2">
         2025 MLB Postseason Bracket
       </h1>
-      <p class="text-gray-600" v-if="!isBracketLocked">
+      <p class="text-gray-600" v-if="!isBracketLocked && isOwnBracket">
         Click on teams to advance them through the bracket
+      </p>
+      <p class="text-gray-600" v-else-if="!isOwnBracket">
+        This bracket is view-only
       </p>
 
       <!-- Countdown Timer or Lock Message -->
-      <div
-        v-if="isBracketLocked"
-        class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg"
-      >
-        <div class="flex items-center justify-center gap-2 text-red-700">
-          <UIcon name="i-heroicons-lock-closed" class="w-5 h-5" />
-          <span class="font-semibold"
-            >Bracket Locked - Playoffs Have Begun!</span
-          >
+      <ClientOnly>
+        <div
+          v-if="isBracketLocked"
+          class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg"
+        >
+          <div class="flex items-center justify-center gap-2 text-red-700">
+            <UIcon name="i-heroicons-lock-closed" class="w-5 h-5" />
+            <span class="font-semibold"
+              >Bracket Locked - Playoffs Have Begun!</span
+            >
+          </div>
         </div>
-      </div>
 
-      <div
-        v-else
-        class="mt-4 p-4 bg-blue-100 border border-blue-200 rounded-lg"
-      >
-        <p class="text-sm text-blue-600 mb-2">
-          Time until first game (Sept 30, 1:08 PM EST)
-        </p>
-        <div class="flex justify-center gap-4">
-          <div class="text-center">
-            <div class="text-2xl font-bold text-blue-900">
-              {{ timeRemaining.days }}
+        <div
+          v-else
+          class="mt-4 p-4 bg-blue-100 border border-blue-200 rounded-lg"
+        >
+          <p class="text-sm text-blue-600 mb-2">
+            Time until first game (Sept 30, 1:08 PM EST)
+          </p>
+          <div class="flex justify-center gap-4">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-blue-900">
+                {{ timeRemaining.days }}
+              </div>
+              <div class="text-xs text-blue-600">DAYS</div>
             </div>
-            <div class="text-xs text-blue-600">DAYS</div>
-          </div>
-          <div class="text-center">
-            <div class="text-2xl font-bold text-blue-900">
-              {{ timeRemaining.hours }}
+            <div class="text-center">
+              <div class="text-2xl font-bold text-blue-900">
+                {{ timeRemaining.hours }}
+              </div>
+              <div class="text-xs text-blue-600">HOURS</div>
             </div>
-            <div class="text-xs text-blue-600">HOURS</div>
-          </div>
-          <div class="text-center">
-            <div class="text-2xl font-bold text-blue-900">
-              {{ timeRemaining.minutes }}
+            <div class="text-center">
+              <div class="text-2xl font-bold text-blue-900">
+                {{ timeRemaining.minutes }}
+              </div>
+              <div class="text-xs text-blue-600">MINUTES</div>
             </div>
-            <div class="text-xs text-blue-600">MINUTES</div>
-          </div>
-          <div class="text-center">
-            <div class="text-2xl font-bold text-blue-900">
-              {{ timeRemaining.seconds }}
+            <div class="text-center">
+              <div class="text-2xl font-bold text-blue-900">
+                {{ timeRemaining.seconds }}
+              </div>
+              <div class="text-xs text-blue-600">SECONDS</div>
             </div>
-            <div class="text-xs text-blue-600">SECONDS</div>
           </div>
+          <p class="text-xs text-blue-500 mt-2">
+            Make your predictions before the deadline!
+          </p>
         </div>
-        <p class="text-xs text-blue-500 mt-2">
-          Make your predictions before the deadline!
-        </p>
-      </div>
+      </ClientOnly>
 
       <!-- Points System Info -->
       <div
@@ -766,7 +1104,8 @@ await useAsyncData(() => {
     </div>
 
     <!-- Desktop: 7 columns, Mobile: Single column with sections -->
-    <div class="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-2 mt-8">
+    <ClientOnly>
+      <div class="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-2 mt-8">
       <!-- AL Wild Card -->
       <div class="flex flex-col justify-center">
         <div
@@ -787,7 +1126,7 @@ await useAsyncData(() => {
               }.svg`"
               :ui="{
                 root: `p-2 shadow-md transition-all ${
-                  !isBracketLocked
+                  !isBracketLocked && isOwnBracket
                     ? 'hover:shadow-lg cursor-pointer'
                     : 'cursor-not-allowed opacity-90'
                 } ${
@@ -800,11 +1139,12 @@ await useAsyncData(() => {
               :alt="americanLeaguePlayoffs[matchup.higher - 1].name"
               size="3xl"
               @click="
-                advanceWildcardWinner(
-                  'americanLeague',
-                  wildcardMatchups.americanLeague.indexOf(matchup),
-                  matchup.higher
-                )
+                isOwnBracket &&
+                  advanceWildcardWinner(
+                    'americanLeague',
+                    wildcardMatchups.americanLeague.indexOf(matchup),
+                    matchup.higher
+                  )
               "
             />
             <UAvatar
@@ -813,7 +1153,7 @@ await useAsyncData(() => {
               }.svg`"
               :ui="{
                 root: `p-2 shadow-md transition-all ${
-                  !isBracketLocked
+                  !isBracketLocked && isOwnBracket
                     ? 'hover:shadow-lg cursor-pointer'
                     : 'cursor-not-allowed opacity-90'
                 } ${
@@ -826,11 +1166,12 @@ await useAsyncData(() => {
               :alt="americanLeaguePlayoffs[matchup.lower - 1].name"
               size="3xl"
               @click="
-                advanceWildcardWinner(
-                  'americanLeague',
-                  wildcardMatchups.americanLeague.indexOf(matchup),
-                  matchup.lower
-                )
+                isOwnBracket &&
+                  advanceWildcardWinner(
+                    'americanLeague',
+                    wildcardMatchups.americanLeague.indexOf(matchup),
+                    matchup.lower
+                  )
               "
             />
           </div>
@@ -858,7 +1199,7 @@ await useAsyncData(() => {
               }.svg`"
               :ui="{
                 root: `p-2 shadow-md transition-all ${
-                  !isBracketLocked
+                  !isBracketLocked && isOwnBracket
                     ? 'hover:shadow-lg cursor-pointer'
                     : 'cursor-not-allowed opacity-90'
                 } ${
@@ -871,7 +1212,8 @@ await useAsyncData(() => {
               :alt="americanLeaguePlayoffs[matchup.higher - 1].name"
               size="3xl"
               @click="
-                matchup.lower &&
+                isOwnBracket &&
+                  matchup.lower &&
                   advanceDivisionSeriesWinner(
                     'americanLeague',
                     index,
@@ -887,7 +1229,7 @@ await useAsyncData(() => {
               }.svg`"
               :ui="{
                 root: `p-2 shadow-md transition-all ${
-                  !isBracketLocked
+                  !isBracketLocked && isOwnBracket
                     ? 'hover:shadow-lg cursor-pointer'
                     : 'cursor-not-allowed opacity-90'
                 } ${
@@ -900,11 +1242,12 @@ await useAsyncData(() => {
               :alt="americanLeaguePlayoffs[matchup.lower - 1].name"
               size="3xl"
               @click="
-                advanceDivisionSeriesWinner(
-                  'americanLeague',
-                  index,
-                  matchup.lower
-                )
+                isOwnBracket &&
+                  advanceDivisionSeriesWinner(
+                    'americanLeague',
+                    index,
+                    matchup.lower
+                  )
               "
             />
             <UAvatar
@@ -941,7 +1284,11 @@ await useAsyncData(() => {
                 ].id
               }.svg`"
               :ui="{
-                root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
+                root: `p-2 shadow-md transition-all ${
+                  isOwnBracket
+                    ? 'hover:shadow-lg cursor-pointer'
+                    : 'cursor-not-allowed'
+                } ${
                   championshipSeriesMatchups.americanLeague.winner ===
                   championshipSeriesMatchups.americanLeague.team1
                     ? 'bg-blue-100 ring-2 ring-blue-500'
@@ -956,7 +1303,8 @@ await useAsyncData(() => {
               "
               size="3xl"
               @click="
-                championshipSeriesMatchups.americanLeague.team2 &&
+                isOwnBracket &&
+                  championshipSeriesMatchups.americanLeague.team2 &&
                   advanceChampionshipSeriesWinner(
                     'americanLeague',
                     championshipSeriesMatchups.americanLeague.team1
@@ -981,7 +1329,11 @@ await useAsyncData(() => {
                 ].id
               }.svg`"
               :ui="{
-                root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
+                root: `p-2 shadow-md transition-all ${
+                  isOwnBracket
+                    ? 'hover:shadow-lg cursor-pointer'
+                    : 'cursor-not-allowed'
+                } ${
                   championshipSeriesMatchups.americanLeague.winner ===
                   championshipSeriesMatchups.americanLeague.team2
                     ? 'bg-blue-100 ring-2 ring-blue-500'
@@ -996,7 +1348,8 @@ await useAsyncData(() => {
               "
               size="3xl"
               @click="
-                championshipSeriesMatchups.americanLeague.team1 &&
+                isOwnBracket &&
+                  championshipSeriesMatchups.americanLeague.team1 &&
                   advanceChampionshipSeriesWinner(
                     'americanLeague',
                     championshipSeriesMatchups.americanLeague.team2
@@ -1035,9 +1388,13 @@ await useAsyncData(() => {
                 americanLeaguePlayoffs[worldSeriesMatchup.americanLeague - 1].id
               }.svg`"
               :ui="{
-                root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
-                  worldSeriesMatchup.champion ===
-                  worldSeriesMatchup.americanLeague
+                root: `p-2 shadow-md transition-all ${
+                  isOwnBracket
+                    ? 'hover:shadow-lg cursor-pointer'
+                    : 'cursor-not-allowed'
+                } ${
+                  worldSeriesMatchup.championId ===
+                  worldSeriesMatchup.americanLeagueId
                     ? 'bg-yellow-100 ring-2 ring-yellow-500'
                     : 'bg-white/75'
                 }`,
@@ -1049,8 +1406,10 @@ await useAsyncData(() => {
               "
               size="3xl"
               @click="
-                worldSeriesMatchup.nationalLeague &&
-                  crownWorldSeriesChampion(worldSeriesMatchup.americanLeague)
+                isOwnBracket &&
+                  worldSeriesMatchup.nationalLeague &&
+                  worldSeriesMatchup.americanLeague &&
+                  crownWorldSeriesChampion(worldSeriesMatchup.americanLeagueId, true)
               "
             />
             <UAvatar
@@ -1069,9 +1428,13 @@ await useAsyncData(() => {
                 nationalLeaguePlayoffs[worldSeriesMatchup.nationalLeague - 1].id
               }.svg`"
               :ui="{
-                root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
-                  worldSeriesMatchup.champion ===
-                  worldSeriesMatchup.nationalLeague
+                root: `p-2 shadow-md transition-all ${
+                  isOwnBracket
+                    ? 'hover:shadow-lg cursor-pointer'
+                    : 'cursor-not-allowed'
+                } ${
+                  worldSeriesMatchup.championId ===
+                  worldSeriesMatchup.nationalLeagueId
                     ? 'bg-yellow-100 ring-2 ring-yellow-500'
                     : 'bg-white/75'
                 }`,
@@ -1083,8 +1446,10 @@ await useAsyncData(() => {
               "
               size="3xl"
               @click="
-                worldSeriesMatchup.americanLeague &&
-                  crownWorldSeriesChampion(worldSeriesMatchup.nationalLeague)
+                isOwnBracket &&
+                  worldSeriesMatchup.americanLeague &&
+                  worldSeriesMatchup.nationalLeague &&
+                  crownWorldSeriesChampion(worldSeriesMatchup.nationalLeagueId, false)
               "
             />
             <UAvatar
@@ -1121,7 +1486,11 @@ await useAsyncData(() => {
                 ].id
               }.svg`"
               :ui="{
-                root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
+                root: `p-2 shadow-md transition-all ${
+                  isOwnBracket
+                    ? 'hover:shadow-lg cursor-pointer'
+                    : 'cursor-not-allowed'
+                } ${
                   championshipSeriesMatchups.nationalLeague.winner ===
                   championshipSeriesMatchups.nationalLeague.team1
                     ? 'bg-blue-100 ring-2 ring-blue-500'
@@ -1136,7 +1505,8 @@ await useAsyncData(() => {
               "
               size="3xl"
               @click="
-                championshipSeriesMatchups.nationalLeague.team2 &&
+                isOwnBracket &&
+                  championshipSeriesMatchups.nationalLeague.team2 &&
                   advanceChampionshipSeriesWinner(
                     'nationalLeague',
                     championshipSeriesMatchups.nationalLeague.team1
@@ -1161,7 +1531,11 @@ await useAsyncData(() => {
                 ].id
               }.svg`"
               :ui="{
-                root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
+                root: `p-2 shadow-md transition-all ${
+                  isOwnBracket
+                    ? 'hover:shadow-lg cursor-pointer'
+                    : 'cursor-not-allowed'
+                } ${
                   championshipSeriesMatchups.nationalLeague.winner ===
                   championshipSeriesMatchups.nationalLeague.team2
                     ? 'bg-blue-100 ring-2 ring-blue-500'
@@ -1176,7 +1550,8 @@ await useAsyncData(() => {
               "
               size="3xl"
               @click="
-                championshipSeriesMatchups.nationalLeague.team1 &&
+                isOwnBracket &&
+                  championshipSeriesMatchups.nationalLeague.team1 &&
                   advanceChampionshipSeriesWinner(
                     'nationalLeague',
                     championshipSeriesMatchups.nationalLeague.team2
@@ -1217,7 +1592,7 @@ await useAsyncData(() => {
               }.svg`"
               :ui="{
                 root: `p-2 shadow-md transition-all ${
-                  !isBracketLocked
+                  !isBracketLocked && isOwnBracket
                     ? 'hover:shadow-lg cursor-pointer'
                     : 'cursor-not-allowed opacity-90'
                 } ${
@@ -1230,7 +1605,8 @@ await useAsyncData(() => {
               :alt="nationalLeaguePlayoffs[matchup.higher - 1].name"
               size="3xl"
               @click="
-                matchup.lower &&
+                isOwnBracket &&
+                  matchup.lower &&
                   advanceDivisionSeriesWinner(
                     'nationalLeague',
                     index,
@@ -1246,7 +1622,7 @@ await useAsyncData(() => {
               }.svg`"
               :ui="{
                 root: `p-2 shadow-md transition-all ${
-                  !isBracketLocked
+                  !isBracketLocked && isOwnBracket
                     ? 'hover:shadow-lg cursor-pointer'
                     : 'cursor-not-allowed opacity-90'
                 } ${
@@ -1259,11 +1635,12 @@ await useAsyncData(() => {
               :alt="nationalLeaguePlayoffs[matchup.lower - 1].name"
               size="3xl"
               @click="
-                advanceDivisionSeriesWinner(
-                  'nationalLeague',
-                  index,
-                  matchup.lower
-                )
+                isOwnBracket &&
+                  advanceDivisionSeriesWinner(
+                    'nationalLeague',
+                    index,
+                    matchup.lower
+                  )
               "
             />
             <UAvatar
@@ -1298,7 +1675,7 @@ await useAsyncData(() => {
               }.svg`"
               :ui="{
                 root: `p-2 shadow-md transition-all ${
-                  !isBracketLocked
+                  !isBracketLocked && isOwnBracket
                     ? 'hover:shadow-lg cursor-pointer'
                     : 'cursor-not-allowed opacity-90'
                 } ${
@@ -1311,11 +1688,12 @@ await useAsyncData(() => {
               :alt="nationalLeaguePlayoffs[matchup.higher - 1].name"
               size="3xl"
               @click="
-                advanceWildcardWinner(
-                  'nationalLeague',
-                  wildcardMatchups.nationalLeague.indexOf(matchup),
-                  matchup.higher
-                )
+                isOwnBracket &&
+                  advanceWildcardWinner(
+                    'nationalLeague',
+                    wildcardMatchups.nationalLeague.indexOf(matchup),
+                    matchup.higher
+                  )
               "
             />
             <UAvatar
@@ -1324,7 +1702,7 @@ await useAsyncData(() => {
               }.svg`"
               :ui="{
                 root: `p-2 shadow-md transition-all ${
-                  !isBracketLocked
+                  !isBracketLocked && isOwnBracket
                     ? 'hover:shadow-lg cursor-pointer'
                     : 'cursor-not-allowed opacity-90'
                 } ${
@@ -1337,16 +1715,84 @@ await useAsyncData(() => {
               :alt="nationalLeaguePlayoffs[matchup.lower - 1].name"
               size="3xl"
               @click="
-                advanceWildcardWinner(
-                  'nationalLeague',
-                  wildcardMatchups.nationalLeague.indexOf(matchup),
-                  matchup.lower
-                )
+                isOwnBracket &&
+                  advanceWildcardWinner(
+                    'nationalLeague',
+                    wildcardMatchups.nationalLeague.indexOf(matchup),
+                    matchup.lower
+                  )
               "
             />
           </div>
         </div>
       </div>
+    </div>
+      <template #fallback>
+        <!-- Loading skeleton for SSR -->
+        <div class="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-2 mt-8">
+          <div v-for="i in 7" :key="i" class="flex flex-col justify-center">
+            <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4">
+              <div class="h-4 bg-gray-200 rounded animate-pulse w-24 mx-auto"></div>
+            </div>
+            <div class="flex flex-col gap-8 justify-center items-center">
+              <div class="flex flex-col gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50">
+                <div class="w-20 h-20 bg-gray-200 rounded animate-pulse"></div>
+                <div class="w-20 h-20 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </ClientOnly>
+
+    <!-- All Brackets Section -->
+    <div class="mt-12 lg:mt-16 border-t border-gray-200 pt-8">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">
+        View Other Brackets
+      </h3>
+
+      <div v-if="allBrackets.length === 0" class="text-gray-500">
+        No brackets have been created yet.
+      </div>
+
+      <ul v-else class="space-y-3 max-w-lg">
+        <li v-for="bracket in allBrackets" :key="bracket.user_id">
+          <NuxtLink
+            :to="`/mlb/postseason/${bracket.user_id}`"
+            class="block p-3 rounded-lg border transition-all"
+            :class="{
+              'bg-blue-50 border-blue-300': bracket.isCurrentUser,
+              'bg-green-50 border-green-300':
+                bracket.isOwnBracket && !bracket.isCurrentUser,
+              'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm':
+                !bracket.isCurrentUser && !bracket.isOwnBracket,
+            }"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-medium text-gray-900">
+                  <span v-if="bracket.isOwnBracket">Your Bracket</span>
+                  <span v-else>{{
+                    bracket.name || `User ${bracket.user_id.substring(0, 8)}`
+                  }}</span>
+                </p>
+                <p class="text-sm text-gray-500">
+                  ID: {{ bracket.user_id.substring(0, 8) }}...
+                </p>
+              </div>
+              <div class="text-sm">
+                <span v-if="bracket.isCurrentUser" class="text-blue-600">
+                  Viewing
+                </span>
+                <span v-else-if="bracket.isOwnBracket" class="text-green-600">
+                  You
+                </span>
+                <span v-else class="text-gray-400"> → </span>
+              </div>
+            </div>
+          </NuxtLink>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
