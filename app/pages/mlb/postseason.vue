@@ -1,4 +1,17 @@
 <script setup>
+// Set SEO meta tags
+useSeoMeta({
+  title: "2025 MLB Postseason Bracket",
+  description:
+    "Make your predictions for the 2025 MLB Postseason. Pick winners for Wild Card, Division Series, Championship Series, and World Series matchups.",
+  ogTitle: "2025 MLB Postseason Bracket",
+  ogDescription:
+    "Make your predictions for the 2025 MLB Postseason. Pick winners for Wild Card, Division Series, Championship Series, and World Series matchups.",
+  twitterTitle: "2025 MLB Postseason Bracket",
+  twitterDescription:
+    "Make your predictions for the 2025 MLB Postseason. Pick winners for Wild Card, Division Series, Championship Series, and World Series matchups.",
+});
+
 // Supabase client and user
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
@@ -182,15 +195,26 @@ function advanceWildcardWinner(league, matchupIndex, winningSeed) {
   // Clear any dependent selections if changing a pick
   if (divisionSeriesMatchups[league][dsMatchupIndex].lower !== winningSeed) {
     // Clear division series winner if it was the previous wildcard winner
-    if (divisionSeriesMatchups[league][dsMatchupIndex].winner === divisionSeriesMatchups[league][dsMatchupIndex].lower) {
+    if (
+      divisionSeriesMatchups[league][dsMatchupIndex].winner ===
+      divisionSeriesMatchups[league][dsMatchupIndex].lower
+    ) {
       divisionSeriesMatchups[league][dsMatchupIndex].winner = null;
       divisionSeriesMatchups[league][dsMatchupIndex].winnerId = null;
 
       // Clear championship series if this team was there
-      if (dsMatchupIndex === 0 && championshipSeriesMatchups[league].team1 === divisionSeriesMatchups[league][dsMatchupIndex].lower) {
+      if (
+        dsMatchupIndex === 0 &&
+        championshipSeriesMatchups[league].team1 ===
+          divisionSeriesMatchups[league][dsMatchupIndex].lower
+      ) {
         championshipSeriesMatchups[league].team1 = null;
         championshipSeriesMatchups[league].team1Id = null;
-      } else if (dsMatchupIndex === 1 && championshipSeriesMatchups[league].team2 === divisionSeriesMatchups[league][dsMatchupIndex].lower) {
+      } else if (
+        dsMatchupIndex === 1 &&
+        championshipSeriesMatchups[league].team2 ===
+          divisionSeriesMatchups[league][dsMatchupIndex].lower
+      ) {
         championshipSeriesMatchups[league].team2 = null;
         championshipSeriesMatchups[league].team2Id = null;
       }
@@ -259,10 +283,16 @@ function advanceDivisionSeriesWinner(league, matchupIndex, winningSeed) {
   // Clear dependent selections if changing a pick
   if (previousWinner && previousWinner !== winningSeed) {
     // Clear championship series for this team
-    if (matchupIndex === 0 && championshipSeriesMatchups[league].team1 === previousWinner) {
+    if (
+      matchupIndex === 0 &&
+      championshipSeriesMatchups[league].team1 === previousWinner
+    ) {
       championshipSeriesMatchups[league].team1 = null;
       championshipSeriesMatchups[league].team1Id = null;
-    } else if (matchupIndex === 1 && championshipSeriesMatchups[league].team2 === previousWinner) {
+    } else if (
+      matchupIndex === 1 &&
+      championshipSeriesMatchups[league].team2 === previousWinner
+    ) {
       championshipSeriesMatchups[league].team2 = null;
       championshipSeriesMatchups[league].team2Id = null;
     }
@@ -683,26 +713,49 @@ await useAsyncData(() => {
       </div>
 
       <!-- Points System Info -->
-      <div class="mt-4 lg:mt-6 p-3 lg:p-4 bg-gray-50 border border-gray-200 rounded-lg">
+      <div
+        class="mt-4 lg:mt-6 p-3 lg:p-4 bg-gray-50 border border-gray-200 rounded-lg"
+      >
         <h3 class="text-xs lg:text-sm font-semibold text-gray-900 mb-2">
-          <UIcon name="i-heroicons-trophy" class="w-3 h-3 lg:w-4 lg:h-4 inline mr-1" />
+          <UIcon
+            name="i-heroicons-trophy"
+            class="w-3 h-3 lg:w-4 lg:h-4 inline mr-1"
+          />
           Point System
         </h3>
-        <div class="grid grid-cols-2 lg:flex lg:flex-wrap justify-center gap-2 lg:gap-4">
-          <div class="flex flex-col sm:flex-row items-center gap-0 sm:gap-1 text-center sm:text-left">
-            <span class="font-semibold text-gray-700 text-xs sm:text-sm">Wild Card:</span>
+        <div
+          class="grid grid-cols-2 lg:flex lg:flex-wrap justify-center gap-2 lg:gap-4"
+        >
+          <div
+            class="flex flex-col sm:flex-row items-center gap-0 sm:gap-1 text-center sm:text-left"
+          >
+            <span class="font-semibold text-gray-700 text-xs sm:text-sm"
+              >Wild Card:</span
+            >
             <span class="text-gray-600 text-xs sm:text-sm">10 pts</span>
           </div>
-          <div class="flex flex-col sm:flex-row items-center gap-0 sm:gap-1 text-center sm:text-left">
-            <span class="font-semibold text-gray-700 text-xs sm:text-sm">Division Series:</span>
+          <div
+            class="flex flex-col sm:flex-row items-center gap-0 sm:gap-1 text-center sm:text-left"
+          >
+            <span class="font-semibold text-gray-700 text-xs sm:text-sm"
+              >Division Series:</span
+            >
             <span class="text-gray-600 text-xs sm:text-sm">20 pts</span>
           </div>
-          <div class="flex flex-col sm:flex-row items-center gap-0 sm:gap-1 text-center sm:text-left">
-            <span class="font-semibold text-gray-700 text-xs sm:text-sm">Championship:</span>
+          <div
+            class="flex flex-col sm:flex-row items-center gap-0 sm:gap-1 text-center sm:text-left"
+          >
+            <span class="font-semibold text-gray-700 text-xs sm:text-sm"
+              >Championship:</span
+            >
             <span class="text-gray-600 text-xs sm:text-sm">40 pts</span>
           </div>
-          <div class="flex flex-col sm:flex-row items-center gap-0 sm:gap-1 text-center sm:text-left">
-            <span class="font-semibold text-gray-700 text-xs sm:text-sm">World Series:</span>
+          <div
+            class="flex flex-col sm:flex-row items-center gap-0 sm:gap-1 text-center sm:text-left"
+          >
+            <span class="font-semibold text-gray-700 text-xs sm:text-sm"
+              >World Series:</span
+            >
             <span class="text-gray-600 text-xs sm:text-sm">80 pts</span>
           </div>
         </div>
@@ -716,530 +769,582 @@ await useAsyncData(() => {
     <div class="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-2 mt-8">
       <!-- AL Wild Card -->
       <div class="flex flex-col justify-center">
-        <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4">AL Wild Card</div>
-        <div class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center">
         <div
-          class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
-          v-for="matchup in wildcardMatchups.americanLeague"
+          class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4"
         >
-          <UAvatar
-            :src="`https://www.mlbstatic.com/team-logos/${
-              americanLeaguePlayoffs[matchup.higher - 1].id
-            }.svg`"
-            :ui="{
-              root: `p-2 shadow-md transition-all ${
-                !isBracketLocked
-                  ? 'hover:shadow-lg cursor-pointer'
-                  : 'cursor-not-allowed opacity-90'
-              } ${
-                matchup.winner === matchup.higher
-                  ? 'bg-blue-100 ring-2 ring-blue-500'
-                  : 'bg-white/75'
-              }`,
-              image: 'object-contain rounded-none',
-            }"
-            :alt="americanLeaguePlayoffs[matchup.higher - 1].name"
-            size="3xl"
-            @click="
-              advanceWildcardWinner(
-                'americanLeague',
-                wildcardMatchups.americanLeague.indexOf(matchup),
-                matchup.higher
-              )
-            "
-          />
-          <UAvatar
-            :src="`https://www.mlbstatic.com/team-logos/${
-              americanLeaguePlayoffs[matchup.lower - 1].id
-            }.svg`"
-            :ui="{
-              root: `p-2 shadow-md transition-all ${
-                !isBracketLocked
-                  ? 'hover:shadow-lg cursor-pointer'
-                  : 'cursor-not-allowed opacity-90'
-              } ${
-                matchup.winner === matchup.lower
-                  ? 'bg-blue-100 ring-2 ring-blue-500'
-                  : 'bg-white/75'
-              }`,
-              image: 'object-contain rounded-none',
-            }"
-            :alt="americanLeaguePlayoffs[matchup.lower - 1].name"
-            size="3xl"
-            @click="
-              advanceWildcardWinner(
-                'americanLeague',
-                wildcardMatchups.americanLeague.indexOf(matchup),
-                matchup.lower
-              )
-            "
-          />
+          AL Wild Card
         </div>
+        <div
+          class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center"
+        >
+          <div
+            class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
+            v-for="matchup in wildcardMatchups.americanLeague"
+          >
+            <UAvatar
+              :src="`https://www.mlbstatic.com/team-logos/${
+                americanLeaguePlayoffs[matchup.higher - 1].id
+              }.svg`"
+              :ui="{
+                root: `p-2 shadow-md transition-all ${
+                  !isBracketLocked
+                    ? 'hover:shadow-lg cursor-pointer'
+                    : 'cursor-not-allowed opacity-90'
+                } ${
+                  matchup.winner === matchup.higher
+                    ? 'bg-blue-100 ring-2 ring-blue-500'
+                    : 'bg-white/75'
+                }`,
+                image: 'object-contain rounded-none',
+              }"
+              :alt="americanLeaguePlayoffs[matchup.higher - 1].name"
+              size="3xl"
+              @click="
+                advanceWildcardWinner(
+                  'americanLeague',
+                  wildcardMatchups.americanLeague.indexOf(matchup),
+                  matchup.higher
+                )
+              "
+            />
+            <UAvatar
+              :src="`https://www.mlbstatic.com/team-logos/${
+                americanLeaguePlayoffs[matchup.lower - 1].id
+              }.svg`"
+              :ui="{
+                root: `p-2 shadow-md transition-all ${
+                  !isBracketLocked
+                    ? 'hover:shadow-lg cursor-pointer'
+                    : 'cursor-not-allowed opacity-90'
+                } ${
+                  matchup.winner === matchup.lower
+                    ? 'bg-blue-100 ring-2 ring-blue-500'
+                    : 'bg-white/75'
+                }`,
+                image: 'object-contain rounded-none',
+              }"
+              :alt="americanLeaguePlayoffs[matchup.lower - 1].name"
+              size="3xl"
+              @click="
+                advanceWildcardWinner(
+                  'americanLeague',
+                  wildcardMatchups.americanLeague.indexOf(matchup),
+                  matchup.lower
+                )
+              "
+            />
+          </div>
         </div>
       </div>
       <!-- ALDS -->
       <div class="flex flex-col justify-center">
-        <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">AL Division Series</div>
-        <div class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center">
         <div
-          class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
-          v-for="(matchup, index) in divisionSeriesMatchups.americanLeague"
-          :key="`alds-${index}`"
+          class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0"
         >
-          <!-- Higher seed -->
-          <UAvatar
-            :src="`https://www.mlbstatic.com/team-logos/${
-              americanLeaguePlayoffs[matchup.higher - 1].id
-            }.svg`"
-            :ui="{
-              root: `p-2 shadow-md transition-all ${
-                !isBracketLocked
-                  ? 'hover:shadow-lg cursor-pointer'
-                  : 'cursor-not-allowed opacity-90'
-              } ${
-                matchup.winner === matchup.higher
-                  ? 'bg-blue-100 ring-2 ring-blue-500'
-                  : 'bg-white/75'
-              }`,
-              image: 'object-contain rounded-none',
-            }"
-            :alt="americanLeaguePlayoffs[matchup.higher - 1].name"
-            size="3xl"
-            @click="
-              matchup.lower &&
+          AL Division Series
+        </div>
+        <div
+          class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center"
+        >
+          <div
+            class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
+            v-for="(matchup, index) in divisionSeriesMatchups.americanLeague"
+            :key="`alds-${index}`"
+          >
+            <!-- Higher seed -->
+            <UAvatar
+              :src="`https://www.mlbstatic.com/team-logos/${
+                americanLeaguePlayoffs[matchup.higher - 1].id
+              }.svg`"
+              :ui="{
+                root: `p-2 shadow-md transition-all ${
+                  !isBracketLocked
+                    ? 'hover:shadow-lg cursor-pointer'
+                    : 'cursor-not-allowed opacity-90'
+                } ${
+                  matchup.winner === matchup.higher
+                    ? 'bg-blue-100 ring-2 ring-blue-500'
+                    : 'bg-white/75'
+                }`,
+                image: 'object-contain rounded-none',
+              }"
+              :alt="americanLeaguePlayoffs[matchup.higher - 1].name"
+              size="3xl"
+              @click="
+                matchup.lower &&
+                  advanceDivisionSeriesWinner(
+                    'americanLeague',
+                    index,
+                    matchup.higher
+                  )
+              "
+            />
+            <!-- Lower seed (wildcard winner) -->
+            <UAvatar
+              v-if="matchup.lower"
+              :src="`https://www.mlbstatic.com/team-logos/${
+                americanLeaguePlayoffs[matchup.lower - 1].id
+              }.svg`"
+              :ui="{
+                root: `p-2 shadow-md transition-all ${
+                  !isBracketLocked
+                    ? 'hover:shadow-lg cursor-pointer'
+                    : 'cursor-not-allowed opacity-90'
+                } ${
+                  matchup.winner === matchup.lower
+                    ? 'bg-blue-100 ring-2 ring-blue-500'
+                    : 'bg-white/75'
+                }`,
+                image: 'object-contain rounded-none',
+              }"
+              :alt="americanLeaguePlayoffs[matchup.lower - 1].name"
+              size="3xl"
+              @click="
                 advanceDivisionSeriesWinner(
                   'americanLeague',
                   index,
-                  matchup.higher
+                  matchup.lower
                 )
-            "
-          />
-          <!-- Lower seed (wildcard winner) -->
-          <UAvatar
-            v-if="matchup.lower"
-            :src="`https://www.mlbstatic.com/team-logos/${
-              americanLeaguePlayoffs[matchup.lower - 1].id
-            }.svg`"
-            :ui="{
-              root: `p-2 shadow-md transition-all ${
-                !isBracketLocked
-                  ? 'hover:shadow-lg cursor-pointer'
-                  : 'cursor-not-allowed opacity-90'
-              } ${
-                matchup.winner === matchup.lower
-                  ? 'bg-blue-100 ring-2 ring-blue-500'
-                  : 'bg-white/75'
-              }`,
-              image: 'object-contain rounded-none',
-            }"
-            :alt="americanLeaguePlayoffs[matchup.lower - 1].name"
-            size="3xl"
-            @click="
-              advanceDivisionSeriesWinner(
-                'americanLeague',
-                index,
-                matchup.lower
-              )
-            "
-          />
-          <UAvatar
-            v-else
-            :ui="{
-              root: 'bg-white/75 p-2 shadow-md',
-              image: 'object-contain rounded-none',
-            }"
-            size="3xl"
-          />
-        </div>
+              "
+            />
+            <UAvatar
+              v-else
+              :ui="{
+                root: 'bg-white/75 p-2 shadow-md',
+                image: 'object-contain rounded-none',
+              }"
+              size="3xl"
+            />
+          </div>
         </div>
       </div>
 
       <!-- ALCS -->
       <div class="flex flex-col justify-center">
-        <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">ALCS</div>
-        <div class="flex flex-row lg:flex-col gap-6 lg:gap-4 justify-center items-center">
-        <div class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50">
-        <!-- ALCS Team 1 -->
-        <UAvatar
-          v-if="championshipSeriesMatchups.americanLeague.team1"
-          :src="`https://www.mlbstatic.com/team-logos/${
-            americanLeaguePlayoffs[
-              championshipSeriesMatchups.americanLeague.team1 - 1
-            ].id
-          }.svg`"
-          :ui="{
-            root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
-              championshipSeriesMatchups.americanLeague.winner ===
-              championshipSeriesMatchups.americanLeague.team1
-                ? 'bg-blue-100 ring-2 ring-blue-500'
-                : 'bg-white/75'
-            }`,
-            image: 'object-contain rounded-none',
-          }"
-          :alt="
-            americanLeaguePlayoffs[
-              championshipSeriesMatchups.americanLeague.team1 - 1
-            ].name
-          "
-          size="3xl"
-          @click="
-            championshipSeriesMatchups.americanLeague.team2 &&
-              advanceChampionshipSeriesWinner(
-                'americanLeague',
-                championshipSeriesMatchups.americanLeague.team1
-              )
-          "
-        />
-        <UAvatar
-          v-else
-          :ui="{
-            root: 'bg-white/75 p-2 shadow-md',
-            image: 'object-contain rounded-none',
-          }"
-          size="3xl"
-        />
-
-        <!-- ALCS Team 2 -->
-        <UAvatar
-          v-if="championshipSeriesMatchups.americanLeague.team2"
-          :src="`https://www.mlbstatic.com/team-logos/${
-            americanLeaguePlayoffs[
-              championshipSeriesMatchups.americanLeague.team2 - 1
-            ].id
-          }.svg`"
-          :ui="{
-            root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
-              championshipSeriesMatchups.americanLeague.winner ===
-              championshipSeriesMatchups.americanLeague.team2
-                ? 'bg-blue-100 ring-2 ring-blue-500'
-                : 'bg-white/75'
-            }`,
-            image: 'object-contain rounded-none',
-          }"
-          :alt="
-            americanLeaguePlayoffs[
-              championshipSeriesMatchups.americanLeague.team2 - 1
-            ].name
-          "
-          size="3xl"
-          @click="
-            championshipSeriesMatchups.americanLeague.team1 &&
-              advanceChampionshipSeriesWinner(
-                'americanLeague',
-                championshipSeriesMatchups.americanLeague.team2
-              )
-          "
-        />
-        <UAvatar
-          v-else
-          :ui="{
-            root: 'bg-white/75 p-2 shadow-md',
-            image: 'object-contain rounded-none',
-          }"
-          size="3xl"
-        />
+        <div
+          class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0"
+        >
+          ALCS
         </div>
+        <div
+          class="flex flex-row lg:flex-col gap-6 lg:gap-4 justify-center items-center"
+        >
+          <div
+            class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
+          >
+            <!-- ALCS Team 1 -->
+            <UAvatar
+              v-if="championshipSeriesMatchups.americanLeague.team1"
+              :src="`https://www.mlbstatic.com/team-logos/${
+                americanLeaguePlayoffs[
+                  championshipSeriesMatchups.americanLeague.team1 - 1
+                ].id
+              }.svg`"
+              :ui="{
+                root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
+                  championshipSeriesMatchups.americanLeague.winner ===
+                  championshipSeriesMatchups.americanLeague.team1
+                    ? 'bg-blue-100 ring-2 ring-blue-500'
+                    : 'bg-white/75'
+                }`,
+                image: 'object-contain rounded-none',
+              }"
+              :alt="
+                americanLeaguePlayoffs[
+                  championshipSeriesMatchups.americanLeague.team1 - 1
+                ].name
+              "
+              size="3xl"
+              @click="
+                championshipSeriesMatchups.americanLeague.team2 &&
+                  advanceChampionshipSeriesWinner(
+                    'americanLeague',
+                    championshipSeriesMatchups.americanLeague.team1
+                  )
+              "
+            />
+            <UAvatar
+              v-else
+              :ui="{
+                root: 'bg-white/75 p-2 shadow-md',
+                image: 'object-contain rounded-none',
+              }"
+              size="3xl"
+            />
+
+            <!-- ALCS Team 2 -->
+            <UAvatar
+              v-if="championshipSeriesMatchups.americanLeague.team2"
+              :src="`https://www.mlbstatic.com/team-logos/${
+                americanLeaguePlayoffs[
+                  championshipSeriesMatchups.americanLeague.team2 - 1
+                ].id
+              }.svg`"
+              :ui="{
+                root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
+                  championshipSeriesMatchups.americanLeague.winner ===
+                  championshipSeriesMatchups.americanLeague.team2
+                    ? 'bg-blue-100 ring-2 ring-blue-500'
+                    : 'bg-white/75'
+                }`,
+                image: 'object-contain rounded-none',
+              }"
+              :alt="
+                americanLeaguePlayoffs[
+                  championshipSeriesMatchups.americanLeague.team2 - 1
+                ].name
+              "
+              size="3xl"
+              @click="
+                championshipSeriesMatchups.americanLeague.team1 &&
+                  advanceChampionshipSeriesWinner(
+                    'americanLeague',
+                    championshipSeriesMatchups.americanLeague.team2
+                  )
+              "
+            />
+            <UAvatar
+              v-else
+              :ui="{
+                root: 'bg-white/75 p-2 shadow-md',
+                image: 'object-contain rounded-none',
+              }"
+              size="3xl"
+            />
+          </div>
         </div>
       </div>
 
       <!-- World Series -->
       <div class="flex flex-col justify-center">
-        <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">World Series</div>
-        <div class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center">
-        <div class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50">
-        <!-- AL Champion -->
-        <UAvatar
-          v-if="worldSeriesMatchup.americanLeague"
-          :src="`https://www.mlbstatic.com/team-logos/${
-            americanLeaguePlayoffs[worldSeriesMatchup.americanLeague - 1].id
-          }.svg`"
-          :ui="{
-            root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
-              worldSeriesMatchup.champion === worldSeriesMatchup.americanLeague
-                ? 'bg-yellow-100 ring-2 ring-yellow-500'
-                : 'bg-white/75'
-            }`,
-            image: 'object-contain rounded-none',
-          }"
-          :alt="
-            americanLeaguePlayoffs[worldSeriesMatchup.americanLeague - 1].name
-          "
-          size="3xl"
-          @click="
-            worldSeriesMatchup.nationalLeague &&
-              crownWorldSeriesChampion(worldSeriesMatchup.americanLeague)
-          "
-        />
-        <UAvatar
-          v-else
-          :ui="{
-            root: 'bg-white/75 p-2 shadow-md',
-            image: 'object-contain rounded-none',
-          }"
-          size="3xl"
-        />
-
-        <!-- NL Champion -->
-        <UAvatar
-          v-if="worldSeriesMatchup.nationalLeague"
-          :src="`https://www.mlbstatic.com/team-logos/${
-            nationalLeaguePlayoffs[worldSeriesMatchup.nationalLeague - 1].id
-          }.svg`"
-          :ui="{
-            root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
-              worldSeriesMatchup.champion === worldSeriesMatchup.nationalLeague
-                ? 'bg-yellow-100 ring-2 ring-yellow-500'
-                : 'bg-white/75'
-            }`,
-            image: 'object-contain rounded-none',
-          }"
-          :alt="
-            nationalLeaguePlayoffs[worldSeriesMatchup.nationalLeague - 1].name
-          "
-          size="3xl"
-          @click="
-            worldSeriesMatchup.americanLeague &&
-              crownWorldSeriesChampion(worldSeriesMatchup.nationalLeague)
-          "
-        />
-        <UAvatar
-          v-else
-          :ui="{
-            root: 'bg-white/75 p-2 shadow-md',
-            image: 'object-contain rounded-none',
-          }"
-          size="3xl"
-        />
+        <div
+          class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0"
+        >
+          World Series
         </div>
+        <div
+          class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center"
+        >
+          <div
+            class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
+          >
+            <!-- AL Champion -->
+            <UAvatar
+              v-if="worldSeriesMatchup.americanLeague"
+              :src="`https://www.mlbstatic.com/team-logos/${
+                americanLeaguePlayoffs[worldSeriesMatchup.americanLeague - 1].id
+              }.svg`"
+              :ui="{
+                root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
+                  worldSeriesMatchup.champion ===
+                  worldSeriesMatchup.americanLeague
+                    ? 'bg-yellow-100 ring-2 ring-yellow-500'
+                    : 'bg-white/75'
+                }`,
+                image: 'object-contain rounded-none',
+              }"
+              :alt="
+                americanLeaguePlayoffs[worldSeriesMatchup.americanLeague - 1]
+                  .name
+              "
+              size="3xl"
+              @click="
+                worldSeriesMatchup.nationalLeague &&
+                  crownWorldSeriesChampion(worldSeriesMatchup.americanLeague)
+              "
+            />
+            <UAvatar
+              v-else
+              :ui="{
+                root: 'bg-white/75 p-2 shadow-md',
+                image: 'object-contain rounded-none',
+              }"
+              size="3xl"
+            />
+
+            <!-- NL Champion -->
+            <UAvatar
+              v-if="worldSeriesMatchup.nationalLeague"
+              :src="`https://www.mlbstatic.com/team-logos/${
+                nationalLeaguePlayoffs[worldSeriesMatchup.nationalLeague - 1].id
+              }.svg`"
+              :ui="{
+                root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
+                  worldSeriesMatchup.champion ===
+                  worldSeriesMatchup.nationalLeague
+                    ? 'bg-yellow-100 ring-2 ring-yellow-500'
+                    : 'bg-white/75'
+                }`,
+                image: 'object-contain rounded-none',
+              }"
+              :alt="
+                nationalLeaguePlayoffs[worldSeriesMatchup.nationalLeague - 1]
+                  .name
+              "
+              size="3xl"
+              @click="
+                worldSeriesMatchup.americanLeague &&
+                  crownWorldSeriesChampion(worldSeriesMatchup.nationalLeague)
+              "
+            />
+            <UAvatar
+              v-else
+              :ui="{
+                root: 'bg-white/75 p-2 shadow-md',
+                image: 'object-contain rounded-none',
+              }"
+              size="3xl"
+            />
+          </div>
         </div>
       </div>
 
       <!-- NLCS -->
       <div class="flex flex-col justify-center">
-        <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">NLCS</div>
-        <div class="flex flex-row lg:flex-col gap-6 lg:gap-4 justify-center items-center">
-        <div class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50">
-        <!-- NLCS Team 1 -->
-        <UAvatar
-          v-if="championshipSeriesMatchups.nationalLeague.team1"
-          :src="`https://www.mlbstatic.com/team-logos/${
-            nationalLeaguePlayoffs[
-              championshipSeriesMatchups.nationalLeague.team1 - 1
-            ].id
-          }.svg`"
-          :ui="{
-            root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
-              championshipSeriesMatchups.nationalLeague.winner ===
-              championshipSeriesMatchups.nationalLeague.team1
-                ? 'bg-blue-100 ring-2 ring-blue-500'
-                : 'bg-white/75'
-            }`,
-            image: 'object-contain rounded-none',
-          }"
-          :alt="
-            nationalLeaguePlayoffs[
-              championshipSeriesMatchups.nationalLeague.team1 - 1
-            ].name
-          "
-          size="3xl"
-          @click="
-            championshipSeriesMatchups.nationalLeague.team2 &&
-              advanceChampionshipSeriesWinner(
-                'nationalLeague',
-                championshipSeriesMatchups.nationalLeague.team1
-              )
-          "
-        />
-        <UAvatar
-          v-else
-          :ui="{
-            root: 'bg-white/75 p-2 shadow-md',
-            image: 'object-contain rounded-none',
-          }"
-          size="3xl"
-        />
-
-        <!-- NLCS Team 2 -->
-        <UAvatar
-          v-if="championshipSeriesMatchups.nationalLeague.team2"
-          :src="`https://www.mlbstatic.com/team-logos/${
-            nationalLeaguePlayoffs[
-              championshipSeriesMatchups.nationalLeague.team2 - 1
-            ].id
-          }.svg`"
-          :ui="{
-            root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
-              championshipSeriesMatchups.nationalLeague.winner ===
-              championshipSeriesMatchups.nationalLeague.team2
-                ? 'bg-blue-100 ring-2 ring-blue-500'
-                : 'bg-white/75'
-            }`,
-            image: 'object-contain rounded-none',
-          }"
-          :alt="
-            nationalLeaguePlayoffs[
-              championshipSeriesMatchups.nationalLeague.team2 - 1
-            ].name
-          "
-          size="3xl"
-          @click="
-            championshipSeriesMatchups.nationalLeague.team1 &&
-              advanceChampionshipSeriesWinner(
-                'nationalLeague',
-                championshipSeriesMatchups.nationalLeague.team2
-              )
-          "
-        />
-        <UAvatar
-          v-else
-          :ui="{
-            root: 'bg-white/75 p-2 shadow-md',
-            image: 'object-contain rounded-none',
-          }"
-          size="3xl"
-        />
+        <div
+          class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0"
+        >
+          NLCS
         </div>
+        <div
+          class="flex flex-row lg:flex-col gap-6 lg:gap-4 justify-center items-center"
+        >
+          <div
+            class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
+          >
+            <!-- NLCS Team 1 -->
+            <UAvatar
+              v-if="championshipSeriesMatchups.nationalLeague.team1"
+              :src="`https://www.mlbstatic.com/team-logos/${
+                nationalLeaguePlayoffs[
+                  championshipSeriesMatchups.nationalLeague.team1 - 1
+                ].id
+              }.svg`"
+              :ui="{
+                root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
+                  championshipSeriesMatchups.nationalLeague.winner ===
+                  championshipSeriesMatchups.nationalLeague.team1
+                    ? 'bg-blue-100 ring-2 ring-blue-500'
+                    : 'bg-white/75'
+                }`,
+                image: 'object-contain rounded-none',
+              }"
+              :alt="
+                nationalLeaguePlayoffs[
+                  championshipSeriesMatchups.nationalLeague.team1 - 1
+                ].name
+              "
+              size="3xl"
+              @click="
+                championshipSeriesMatchups.nationalLeague.team2 &&
+                  advanceChampionshipSeriesWinner(
+                    'nationalLeague',
+                    championshipSeriesMatchups.nationalLeague.team1
+                  )
+              "
+            />
+            <UAvatar
+              v-else
+              :ui="{
+                root: 'bg-white/75 p-2 shadow-md',
+                image: 'object-contain rounded-none',
+              }"
+              size="3xl"
+            />
+
+            <!-- NLCS Team 2 -->
+            <UAvatar
+              v-if="championshipSeriesMatchups.nationalLeague.team2"
+              :src="`https://www.mlbstatic.com/team-logos/${
+                nationalLeaguePlayoffs[
+                  championshipSeriesMatchups.nationalLeague.team2 - 1
+                ].id
+              }.svg`"
+              :ui="{
+                root: `p-2 shadow-md hover:shadow-lg transition-all cursor-pointer ${
+                  championshipSeriesMatchups.nationalLeague.winner ===
+                  championshipSeriesMatchups.nationalLeague.team2
+                    ? 'bg-blue-100 ring-2 ring-blue-500'
+                    : 'bg-white/75'
+                }`,
+                image: 'object-contain rounded-none',
+              }"
+              :alt="
+                nationalLeaguePlayoffs[
+                  championshipSeriesMatchups.nationalLeague.team2 - 1
+                ].name
+              "
+              size="3xl"
+              @click="
+                championshipSeriesMatchups.nationalLeague.team1 &&
+                  advanceChampionshipSeriesWinner(
+                    'nationalLeague',
+                    championshipSeriesMatchups.nationalLeague.team2
+                  )
+              "
+            />
+            <UAvatar
+              v-else
+              :ui="{
+                root: 'bg-white/75 p-2 shadow-md',
+                image: 'object-contain rounded-none',
+              }"
+              size="3xl"
+            />
+          </div>
         </div>
       </div>
 
       <!-- NLDS -->
       <div class="flex flex-col justify-center">
-        <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">NL Division Series</div>
-        <div class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center">
         <div
-          class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
-          v-for="(matchup, index) in divisionSeriesMatchups.nationalLeague"
-          :key="`nlds-${index}`"
+          class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0"
         >
-          <!-- Higher seed -->
-          <UAvatar
-            :src="`https://www.mlbstatic.com/team-logos/${
-              nationalLeaguePlayoffs[matchup.higher - 1].id
-            }.svg`"
-            :ui="{
-              root: `p-2 shadow-md transition-all ${
-                !isBracketLocked
-                  ? 'hover:shadow-lg cursor-pointer'
-                  : 'cursor-not-allowed opacity-90'
-              } ${
-                matchup.winner === matchup.higher
-                  ? 'bg-blue-100 ring-2 ring-blue-500'
-                  : 'bg-white/75'
-              }`,
-              image: 'object-contain rounded-none',
-            }"
-            :alt="nationalLeaguePlayoffs[matchup.higher - 1].name"
-            size="3xl"
-            @click="
-              matchup.lower &&
+          NL Division Series
+        </div>
+        <div
+          class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center"
+        >
+          <div
+            class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
+            v-for="(matchup, index) in divisionSeriesMatchups.nationalLeague"
+            :key="`nlds-${index}`"
+          >
+            <!-- Higher seed -->
+            <UAvatar
+              :src="`https://www.mlbstatic.com/team-logos/${
+                nationalLeaguePlayoffs[matchup.higher - 1].id
+              }.svg`"
+              :ui="{
+                root: `p-2 shadow-md transition-all ${
+                  !isBracketLocked
+                    ? 'hover:shadow-lg cursor-pointer'
+                    : 'cursor-not-allowed opacity-90'
+                } ${
+                  matchup.winner === matchup.higher
+                    ? 'bg-blue-100 ring-2 ring-blue-500'
+                    : 'bg-white/75'
+                }`,
+                image: 'object-contain rounded-none',
+              }"
+              :alt="nationalLeaguePlayoffs[matchup.higher - 1].name"
+              size="3xl"
+              @click="
+                matchup.lower &&
+                  advanceDivisionSeriesWinner(
+                    'nationalLeague',
+                    index,
+                    matchup.higher
+                  )
+              "
+            />
+            <!-- Lower seed (wildcard winner) -->
+            <UAvatar
+              v-if="matchup.lower"
+              :src="`https://www.mlbstatic.com/team-logos/${
+                nationalLeaguePlayoffs[matchup.lower - 1].id
+              }.svg`"
+              :ui="{
+                root: `p-2 shadow-md transition-all ${
+                  !isBracketLocked
+                    ? 'hover:shadow-lg cursor-pointer'
+                    : 'cursor-not-allowed opacity-90'
+                } ${
+                  matchup.winner === matchup.lower
+                    ? 'bg-blue-100 ring-2 ring-blue-500'
+                    : 'bg-white/75'
+                }`,
+                image: 'object-contain rounded-none',
+              }"
+              :alt="nationalLeaguePlayoffs[matchup.lower - 1].name"
+              size="3xl"
+              @click="
                 advanceDivisionSeriesWinner(
                   'nationalLeague',
                   index,
-                  matchup.higher
+                  matchup.lower
                 )
-            "
-          />
-          <!-- Lower seed (wildcard winner) -->
-          <UAvatar
-            v-if="matchup.lower"
-            :src="`https://www.mlbstatic.com/team-logos/${
-              nationalLeaguePlayoffs[matchup.lower - 1].id
-            }.svg`"
-            :ui="{
-              root: `p-2 shadow-md transition-all ${
-                !isBracketLocked
-                  ? 'hover:shadow-lg cursor-pointer'
-                  : 'cursor-not-allowed opacity-90'
-              } ${
-                matchup.winner === matchup.lower
-                  ? 'bg-blue-100 ring-2 ring-blue-500'
-                  : 'bg-white/75'
-              }`,
-              image: 'object-contain rounded-none',
-            }"
-            :alt="nationalLeaguePlayoffs[matchup.lower - 1].name"
-            size="3xl"
-            @click="
-              advanceDivisionSeriesWinner(
-                'nationalLeague',
-                index,
-                matchup.lower
-              )
-            "
-          />
-          <UAvatar
-            v-else
-            :ui="{
-              root: 'bg-white/75 p-2 shadow-md',
-              image: 'object-contain rounded-none',
-            }"
-            size="3xl"
-          />
-        </div>
+              "
+            />
+            <UAvatar
+              v-else
+              :ui="{
+                root: 'bg-white/75 p-2 shadow-md',
+                image: 'object-contain rounded-none',
+              }"
+              size="3xl"
+            />
+          </div>
         </div>
       </div>
 
       <!-- NL Wild Card -->
       <div class="flex flex-col justify-center">
-        <div class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0">NL Wild Card</div>
-        <div class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center">
         <div
-          class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
-          v-for="matchup in wildcardMatchups.nationalLeague"
+          class="text-center font-semibold text-gray-700 text-xs lg:text-sm mb-2 lg:mb-4 mt-6 lg:mt-0"
         >
-          <UAvatar
-            :src="`https://www.mlbstatic.com/team-logos/${
-              nationalLeaguePlayoffs[matchup.higher - 1].id
-            }.svg`"
-            :ui="{
-              root: `p-2 shadow-md transition-all ${
-                !isBracketLocked
-                  ? 'hover:shadow-lg cursor-pointer'
-                  : 'cursor-not-allowed opacity-90'
-              } ${
-                matchup.winner === matchup.higher
-                  ? 'bg-blue-100 ring-2 ring-blue-500'
-                  : 'bg-white/75'
-              }`,
-              image: 'object-contain rounded-none',
-            }"
-            :alt="nationalLeaguePlayoffs[matchup.higher - 1].name"
-            size="3xl"
-            @click="
-              advanceWildcardWinner(
-                'nationalLeague',
-                wildcardMatchups.nationalLeague.indexOf(matchup),
-                matchup.higher
-              )
-            "
-          />
-          <UAvatar
-            :src="`https://www.mlbstatic.com/team-logos/${
-              nationalLeaguePlayoffs[matchup.lower - 1].id
-            }.svg`"
-            :ui="{
-              root: `p-2 shadow-md transition-all ${
-                !isBracketLocked
-                  ? 'hover:shadow-lg cursor-pointer'
-                  : 'cursor-not-allowed opacity-90'
-              } ${
-                matchup.winner === matchup.lower
-                  ? 'bg-blue-100 ring-2 ring-blue-500'
-                  : 'bg-white/75'
-              }`,
-              image: 'object-contain rounded-none',
-            }"
-            :alt="nationalLeaguePlayoffs[matchup.lower - 1].name"
-            size="3xl"
-            @click="
-              advanceWildcardWinner(
-                'nationalLeague',
-                wildcardMatchups.nationalLeague.indexOf(matchup),
-                matchup.lower
-              )
-            "
-          />
+          NL Wild Card
         </div>
+        <div
+          class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center"
+        >
+          <div
+            class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
+            v-for="matchup in wildcardMatchups.nationalLeague"
+          >
+            <UAvatar
+              :src="`https://www.mlbstatic.com/team-logos/${
+                nationalLeaguePlayoffs[matchup.higher - 1].id
+              }.svg`"
+              :ui="{
+                root: `p-2 shadow-md transition-all ${
+                  !isBracketLocked
+                    ? 'hover:shadow-lg cursor-pointer'
+                    : 'cursor-not-allowed opacity-90'
+                } ${
+                  matchup.winner === matchup.higher
+                    ? 'bg-blue-100 ring-2 ring-blue-500'
+                    : 'bg-white/75'
+                }`,
+                image: 'object-contain rounded-none',
+              }"
+              :alt="nationalLeaguePlayoffs[matchup.higher - 1].name"
+              size="3xl"
+              @click="
+                advanceWildcardWinner(
+                  'nationalLeague',
+                  wildcardMatchups.nationalLeague.indexOf(matchup),
+                  matchup.higher
+                )
+              "
+            />
+            <UAvatar
+              :src="`https://www.mlbstatic.com/team-logos/${
+                nationalLeaguePlayoffs[matchup.lower - 1].id
+              }.svg`"
+              :ui="{
+                root: `p-2 shadow-md transition-all ${
+                  !isBracketLocked
+                    ? 'hover:shadow-lg cursor-pointer'
+                    : 'cursor-not-allowed opacity-90'
+                } ${
+                  matchup.winner === matchup.lower
+                    ? 'bg-blue-100 ring-2 ring-blue-500'
+                    : 'bg-white/75'
+                }`,
+                image: 'object-contain rounded-none',
+              }"
+              :alt="nationalLeaguePlayoffs[matchup.lower - 1].name"
+              size="3xl"
+              @click="
+                advanceWildcardWinner(
+                  'nationalLeague',
+                  wildcardMatchups.nationalLeague.indexOf(matchup),
+                  matchup.lower
+                )
+              "
+            />
+          </div>
         </div>
       </div>
     </div>
