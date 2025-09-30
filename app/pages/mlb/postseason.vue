@@ -748,7 +748,7 @@ await useAsyncData(() => {
             <span class="font-semibold text-gray-700 text-xs sm:text-sm"
               >Championship:</span
             >
-            <span class="text-gray-600 text-xs sm:text-sm">40 pts</span>
+            <span class="text-gray-600 text-xs sm:text-sm">30 pts</span>
           </div>
           <div
             class="flex flex-col sm:flex-row items-center gap-0 sm:gap-1 text-center sm:text-left"
@@ -756,7 +756,7 @@ await useAsyncData(() => {
             <span class="font-semibold text-gray-700 text-xs sm:text-sm"
               >World Series:</span
             >
-            <span class="text-gray-600 text-xs sm:text-sm">80 pts</span>
+            <span class="text-gray-600 text-xs sm:text-sm">40 pts</span>
           </div>
         </div>
         <p class="text-center text-xs text-gray-500 mt-2">
