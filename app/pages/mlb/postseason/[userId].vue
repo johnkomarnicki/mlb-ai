@@ -721,10 +721,10 @@ async function fetchAllBrackets() {
   try {
     const { data, error } = await supabase
       .from("playoff_brackets")
-      .select("user_id, created_at, updated_at, bracket_name")
+      .select("user_id, created_at, updated_at, bracket_name, points_earned")
       .eq("year", 2025);
 
-    if (error) throw error; // Debug log
+    if (error) throw error;
 
     // Get unique users and fetch their details
     if (data && data.length > 0) {
@@ -740,13 +740,17 @@ async function fetchAllBrackets() {
         );
 
         if (userDisplayNames && !funcError) {
-          userProfiles = userDisplayNames.map((user) => ({
-            user_id: user.user_id,
-            email: user.email,
-            name: user.display_name,
-            isCurrentUser: user.user_id === bracketUserId.value,
-            isOwnBracket: user.user_id === user.value?.id,
-          }));
+          userProfiles = userDisplayNames.map((user) => {
+            const bracketData = data.find(b => b.user_id === user.user_id);
+            return {
+              user_id: user.user_id,
+              email: user.email,
+              name: user.display_name,
+              points_earned: bracketData?.points_earned || 0,
+              isCurrentUser: user.user_id === bracketUserId.value,
+              isOwnBracket: user.user_id === user.value?.id,
+            };
+          });
         } else {
           // Fallback: try other methods for each user
           for (const userId of uniqueUserIds) {
@@ -763,10 +767,12 @@ async function fetchAllBrackets() {
               userEmail = user.value.email;
             }
 
+            const bracketData = data.find(b => b.user_id === userId);
             userProfiles.push({
               user_id: userId,
               email: userEmail,
               name: userName || `User ${userId.substring(0, 8)}`,
+              points_earned: bracketData?.points_earned || 0,
               isCurrentUser: userId === bracketUserId.value,
               isOwnBracket: userId === user.value?.id,
             });
@@ -774,13 +780,17 @@ async function fetchAllBrackets() {
         }
       } catch (err) {
         // Ultimate fallback
-        userProfiles = uniqueUserIds.map((userId) => ({
-          user_id: userId,
-          email: null,
-          name: `User ${userId.substring(0, 8)}`,
-          isCurrentUser: userId === bracketUserId,
-          isOwnBracket: userId === user.value?.id,
-        }));
+        userProfiles = uniqueUserIds.map((userId) => {
+          const bracketData = data.find(b => b.user_id === userId);
+          return {
+            user_id: userId,
+            email: null,
+            name: `User ${userId.substring(0, 8)}`,
+            points_earned: bracketData?.points_earned || 0,
+            isCurrentUser: userId === bracketUserId,
+            isOwnBracket: userId === user.value?.id,
+          };
+        });
       }
       // Debug log
       return userProfiles;
@@ -792,20 +802,89 @@ async function fetchAllBrackets() {
   }
 }
 
+// Fetch playoff results
+async function fetchPlayoffResults() {
+  try {
+    const { data, error } = await supabase
+      .from("playoff_results")
+      .select("*")
+      .not("series_end_date", "is", null)
+      .order("series_end_date", { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching playoff results:", error);
+    return [];
+  }
+}
+
 // Using the userId as the key will automatically refetch when it changes
 const { data: bracketData, pending } = await useAsyncData(
   () => route.params.userId,
   async () => {
-    const [bracketResult, bracketsResult] = await Promise.all([
+    const [bracketResult, bracketsResult, resultsData] = await Promise.all([
       loadBracketFromDatabase(),
       fetchAllBrackets(),
+      fetchPlayoffResults(),
     ]);
     return {
       bracket: bracketResult,
       allBrackets: bracketsResult,
+      playoffResults: resultsData,
     };
   }
 );
+
+// Helper function to check if a pick is correct
+function isCorrectPick(seriesId, teamId) {
+  const results = bracketData.value?.playoffResults || [];
+  const result = results.find(r => r.series_id === seriesId);
+  return result && result.winning_team_id === teamId;
+}
+
+// Helper function to check if a pick is incorrect (picked but wrong)
+function isIncorrectPick(seriesId, teamId) {
+  const results = bracketData.value?.playoffResults || [];
+  const result = results.find(r => r.series_id === seriesId);
+  return result && result.winning_team_id !== teamId;
+}
+
+// Map matchup indices to series IDs
+function getWildcardSeriesId(league, matchupIndex) {
+  if (league === 'americanLeague') {
+    return matchupIndex === 0 ? '2025-ALWC1' : '2025-ALWC2';
+  } else {
+    return matchupIndex === 0 ? '2025-NLWC1' : '2025-NLWC2';
+  }
+}
+
+function getDivisionSeriesId(league, matchupIndex) {
+  if (league === 'americanLeague') {
+    return matchupIndex === 0 ? '2025-ALDS1' : '2025-ALDS2';
+  } else {
+    return matchupIndex === 0 ? '2025-NLDS1' : '2025-NLDS2';
+  }
+}
+
+function getChampionshipSeriesId(league) {
+  return league === 'americanLeague' ? '2025-ALCS' : '2025-NLCS';
+}
+
+// Total points earned
+const totalPoints = computed(() => bracketData.value?.bracket?.points_earned || 0);
+
+// Leaderboard sorted by points
+const leaderboard = computed(() => {
+  if (!allBrackets.value || allBrackets.value.length === 0) return [];
+
+  return [...allBrackets.value]
+    .sort((a, b) => (b.points_earned || 0) - (a.points_earned || 0))
+    .map((bracket, index) => ({
+      ...bracket,
+      rank: index + 1,
+    }));
+});
 
 // Watch for bracketData changes and reapply the loaded bracket
 watchEffect(() => {
@@ -1101,6 +1180,24 @@ watchEffect(() => {
           Points are awarded for each correct winner prediction
         </p>
       </div>
+
+      <!-- Total Points Display (if results are available) -->
+      <ClientOnly>
+        <div
+          v-if="bracketData?.playoffResults?.length > 0"
+          class="mt-4 p-4 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-300 rounded-lg"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-blue-900">Total Points Earned</p>
+              <p class="text-xs text-blue-600">Updated after each series</p>
+            </div>
+            <div class="text-3xl font-bold text-blue-600">
+              {{ totalPoints }}
+            </div>
+          </div>
+        </div>
+      </ClientOnly>
     </div>
 
     <!-- Desktop: 7 columns, Mobile: Single column with sections -->
@@ -1117,7 +1214,17 @@ watchEffect(() => {
           class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center"
         >
           <div
-            class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
+            :class="[
+              'flex flex-col gap-2 lg:gap-4 p-3 rounded-lg',
+              // Check if user picked the correct winner for this matchup
+              matchup.winner && (
+                isCorrectPick(getWildcardSeriesId('americanLeague', wildcardMatchups.americanLeague.indexOf(matchup)), matchup.winnerId)
+                  ? 'border-2 border-green-500 bg-green-50'
+                  : isIncorrectPick(getWildcardSeriesId('americanLeague', wildcardMatchups.americanLeague.indexOf(matchup)), matchup.winnerId)
+                  ? 'border-2 border-red-500 bg-red-50'
+                  : 'border border-gray-200 bg-gray-50'
+              ) || 'border border-gray-200 bg-gray-50'
+            ]"
             v-for="matchup in wildcardMatchups.americanLeague"
           >
             <UAvatar
@@ -1130,9 +1237,17 @@ watchEffect(() => {
                     ? 'hover:shadow-lg cursor-pointer'
                     : 'cursor-not-allowed opacity-90'
                 } ${
-                  matchup.winner === matchup.higher
-                    ? 'bg-blue-100 ring-2 ring-blue-500'
-                    : 'bg-white/75'
+                  // Only show green/red if this is the user's pick
+                  matchup.winner === matchup.higher ? (
+                    // Correct pick - green
+                    isCorrectPick(getWildcardSeriesId('americanLeague', wildcardMatchups.americanLeague.indexOf(matchup)), americanLeaguePlayoffs[matchup.higher - 1].id)
+                      ? 'bg-green-100 ring-2 ring-green-500'
+                      // Incorrect pick - red
+                      : isIncorrectPick(getWildcardSeriesId('americanLeague', wildcardMatchups.americanLeague.indexOf(matchup)), americanLeaguePlayoffs[matchup.higher - 1].id)
+                      ? 'bg-red-100 ring-2 ring-red-500'
+                      // User's selection - blue (no result yet)
+                      : 'bg-blue-100 ring-2 ring-blue-500'
+                  ) : 'bg-white/75'
                 }`,
                 image: 'object-contain rounded-none',
               }"
@@ -1157,9 +1272,17 @@ watchEffect(() => {
                     ? 'hover:shadow-lg cursor-pointer'
                     : 'cursor-not-allowed opacity-90'
                 } ${
-                  matchup.winner === matchup.lower
-                    ? 'bg-blue-100 ring-2 ring-blue-500'
-                    : 'bg-white/75'
+                  // Only show green/red if this is the user's pick
+                  matchup.winner === matchup.lower ? (
+                    // Correct pick - green
+                    isCorrectPick(getWildcardSeriesId('americanLeague', wildcardMatchups.americanLeague.indexOf(matchup)), americanLeaguePlayoffs[matchup.lower - 1].id)
+                      ? 'bg-green-100 ring-2 ring-green-500'
+                      // Incorrect pick - red
+                      : isIncorrectPick(getWildcardSeriesId('americanLeague', wildcardMatchups.americanLeague.indexOf(matchup)), americanLeaguePlayoffs[matchup.lower - 1].id)
+                      ? 'bg-red-100 ring-2 ring-red-500'
+                      // User's selection - blue (no result yet)
+                      : 'bg-blue-100 ring-2 ring-blue-500'
+                  ) : 'bg-white/75'
                 }`,
                 image: 'object-contain rounded-none',
               }"
@@ -1666,7 +1789,17 @@ watchEffect(() => {
           class="flex flex-row lg:flex-col gap-6 lg:gap-8 justify-center items-center lg:justify-center"
         >
           <div
-            class="flex flex-col gap-2 lg:gap-4 p-3 border border-gray-200 rounded-lg bg-gray-50"
+            :class="[
+              'flex flex-col gap-2 lg:gap-4 p-3 rounded-lg',
+              // Check if user picked the correct winner for this matchup
+              matchup.winner && (
+                isCorrectPick(getWildcardSeriesId('nationalLeague', wildcardMatchups.nationalLeague.indexOf(matchup)), matchup.winnerId)
+                  ? 'border-2 border-green-500 bg-green-50'
+                  : isIncorrectPick(getWildcardSeriesId('nationalLeague', wildcardMatchups.nationalLeague.indexOf(matchup)), matchup.winnerId)
+                  ? 'border-2 border-red-500 bg-red-50'
+                  : 'border border-gray-200 bg-gray-50'
+              ) || 'border border-gray-200 bg-gray-50'
+            ]"
             v-for="matchup in wildcardMatchups.nationalLeague"
           >
             <UAvatar
@@ -1679,9 +1812,17 @@ watchEffect(() => {
                     ? 'hover:shadow-lg cursor-pointer'
                     : 'cursor-not-allowed opacity-90'
                 } ${
-                  matchup.winner === matchup.higher
-                    ? 'bg-blue-100 ring-2 ring-blue-500'
-                    : 'bg-white/75'
+                  // Only show green/red if this is the user's pick
+                  matchup.winner === matchup.higher ? (
+                    // Correct pick - green
+                    isCorrectPick(getWildcardSeriesId('nationalLeague', wildcardMatchups.nationalLeague.indexOf(matchup)), nationalLeaguePlayoffs[matchup.higher - 1].id)
+                      ? 'bg-green-100 ring-2 ring-green-500'
+                      // Incorrect pick - red
+                      : isIncorrectPick(getWildcardSeriesId('nationalLeague', wildcardMatchups.nationalLeague.indexOf(matchup)), nationalLeaguePlayoffs[matchup.higher - 1].id)
+                      ? 'bg-red-100 ring-2 ring-red-500'
+                      // User's selection - blue (no result yet)
+                      : 'bg-blue-100 ring-2 ring-blue-500'
+                  ) : 'bg-white/75'
                 }`,
                 image: 'object-contain rounded-none',
               }"
@@ -1706,9 +1847,17 @@ watchEffect(() => {
                     ? 'hover:shadow-lg cursor-pointer'
                     : 'cursor-not-allowed opacity-90'
                 } ${
-                  matchup.winner === matchup.lower
-                    ? 'bg-blue-100 ring-2 ring-blue-500'
-                    : 'bg-white/75'
+                  // Only show green/red if this is the user's pick
+                  matchup.winner === matchup.lower ? (
+                    // Correct pick - green
+                    isCorrectPick(getWildcardSeriesId('nationalLeague', wildcardMatchups.nationalLeague.indexOf(matchup)), nationalLeaguePlayoffs[matchup.lower - 1].id)
+                      ? 'bg-green-100 ring-2 ring-green-500'
+                      // Incorrect pick - red
+                      : isIncorrectPick(getWildcardSeriesId('nationalLeague', wildcardMatchups.nationalLeague.indexOf(matchup)), nationalLeaguePlayoffs[matchup.lower - 1].id)
+                      ? 'bg-red-100 ring-2 ring-red-500'
+                      // User's selection - blue (no result yet)
+                      : 'bg-blue-100 ring-2 ring-blue-500'
+                  ) : 'bg-white/75'
                 }`,
                 image: 'object-contain rounded-none',
               }"
@@ -1745,54 +1894,111 @@ watchEffect(() => {
       </template>
     </ClientOnly>
 
-    <!-- All Brackets Section -->
+    <!-- Leaderboard Section -->
     <div class="mt-12 lg:mt-16 border-t border-gray-200 pt-8">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">
-        View Other Brackets
-      </h3>
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+          <UIcon name="i-heroicons-trophy" class="w-6 h-6 text-yellow-500" />
+          Leaderboard
+        </h3>
+        <p class="text-sm text-gray-500">
+          {{ leaderboard.length }} {{ leaderboard.length === 1 ? 'bracket' : 'brackets' }}
+        </p>
+      </div>
 
-      <div v-if="allBrackets.length === 0" class="text-gray-500">
+      <div v-if="leaderboard.length === 0" class="text-gray-500 text-center py-8">
         No brackets have been created yet.
       </div>
 
-      <ul v-else class="space-y-3 max-w-lg">
-        <li v-for="bracket in allBrackets" :key="bracket.user_id">
-          <NuxtLink
-            :to="`/mlb/postseason/${bracket.user_id}`"
-            class="block p-3 rounded-lg border transition-all"
-            :class="{
-              'bg-blue-50 border-blue-300': bracket.isCurrentUser,
-              'bg-green-50 border-green-300':
-                bracket.isOwnBracket && !bracket.isCurrentUser,
-              'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm':
-                !bracket.isCurrentUser && !bracket.isOwnBracket,
-            }"
-          >
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="font-medium text-gray-900">
-                  <span v-if="bracket.isOwnBracket">Your Bracket</span>
-                  <span v-else>{{
-                    bracket.name || `User ${bracket.user_id.substring(0, 8)}`
-                  }}</span>
-                </p>
-                <p class="text-sm text-gray-500">
-                  ID: {{ bracket.user_id.substring(0, 8) }}...
-                </p>
-              </div>
-              <div class="text-sm">
-                <span v-if="bracket.isCurrentUser" class="text-blue-600">
-                  Viewing
-                </span>
-                <span v-else-if="bracket.isOwnBracket" class="text-green-600">
-                  You
-                </span>
-                <span v-else class="text-gray-400"> → </span>
-              </div>
-            </div>
-          </NuxtLink>
-        </li>
-      </ul>
+      <div v-else class="max-w-2xl">
+        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Rank
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    User
+                  </th>
+                  <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Points
+                  </th>
+                  <th class="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    View
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <tr
+                  v-for="bracket in leaderboard"
+                  :key="bracket.user_id"
+                  :class="{
+                    'bg-blue-50': bracket.isCurrentUser,
+                    'bg-green-50': bracket.isOwnBracket && !bracket.isCurrentUser,
+                    'hover:bg-gray-50': !bracket.isCurrentUser && !bracket.isOwnBracket,
+                  }"
+                >
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <span
+                        v-if="bracket.rank === 1"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-100 text-yellow-700 font-bold text-sm"
+                      >
+                        🥇
+                      </span>
+                      <span
+                        v-else-if="bracket.rank === 2"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-700 font-bold text-sm"
+                      >
+                        🥈
+                      </span>
+                      <span
+                        v-else-if="bracket.rank === 3"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-700 font-bold text-sm"
+                      >
+                        🥉
+                      </span>
+                      <span
+                        v-else
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-600 font-semibold text-sm"
+                      >
+                        {{ bracket.rank }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3">
+                    <div>
+                      <p class="font-medium text-gray-900">
+                        <span v-if="bracket.isOwnBracket">You</span>
+                        <span v-else>{{ bracket.name || `User ${bracket.user_id.substring(0, 8)}` }}</span>
+                      </p>
+                      <p class="text-xs text-gray-500" v-if="bracket.email">
+                        {{ bracket.email }}
+                      </p>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-right">
+                    <span class="text-lg font-bold text-gray-900">
+                      {{ bracket.points_earned || 0 }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-center">
+                    <NuxtLink
+                      :to="`/mlb/postseason/${bracket.user_id}`"
+                      class="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                    >
+                      <span v-if="bracket.isCurrentUser">Viewing</span>
+                      <span v-else>View →</span>
+                    </NuxtLink>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
